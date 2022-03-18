@@ -1,5 +1,5 @@
 import time
-from typing import TypeVar, Type
+from typing import TypeVar, Type, Iterator, Optional
 import enum
 import functools
 import uuid
@@ -47,13 +47,35 @@ class User(BaseModel):
     balance = pw.IntegerField(null=False) # in cents, like all money
     created_time = pw.BigIntegerField(null=False)
 
-    def open_orders(self, stonk_id: int) -> list['Order']:
+    def get_position(self, stonk_id: int) -> Optional['Position']:
+        return Position.select().where(
+            Position.user_id==self.id,
+            Position.quantity!=0,
+            Position.stonk_id==stonk_id,
+        ).first()
+
+    def open_orders(self, stonk_id: int) -> Iterator['Order']:
         return Order.select().where(
             Order.user_id==self.id,
             Order.stonk_id==stonk_id,
             Order.cancelled==False,
             Order.quantity!=0
         )
+
+    def match_history(self, stonk_id: int) -> Iterator['Match']:
+        return Match.select(
+            Match,
+            Order.id,
+            Order.user_id,
+            Order.stonk_id,
+            (Order.id==Match.buyer_order_id).alias("buy")
+        ).join(
+            Order, on=(Order.id==Match.seller_order_id) |
+            (Order.id==Match.buyer_order_id),
+        ).where(
+            Order.user_id==self.id,
+            Order.stonk_id==stonk_id
+        ).order_by(Match.happened_time.desc())
 
     def equity(self) -> int:
         return Position.select(

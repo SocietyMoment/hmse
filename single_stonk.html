@@ -36,6 +36,20 @@
                 {% endif %}
             </a>
             {% if user %}
+                {% set cur_pos = user.get_position(stonk.id) %}
+                {% if cur_pos %}
+                    <h2 style="padding-top: 30px;">Current Position:</h2> 
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-body">
+                            <span class="lead">{{ cur_pos.quantity }} shares</span>
+                            <span class="lead" style="float:right;">
+                                Value:
+                                ${{ (cur_pos.quantity*stonk.latest_price) | format_money }}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+                
                 {% set open_orders = user.open_orders(stonk.id) %}
                 {% if open_orders %}
                     <h2 style="padding-top: 30px;">Open Orders:</h2> 
@@ -51,11 +65,50 @@
                             </div>
                             <div class="card-body">
                                 <span class="lead">${{ order.price | format_money }}</span>
-                                <span class="lead" style="float: right;">{{ order.quantity }} shares</span>
+                                <span style="float: right; text-align:right; margin-top: -.2em;">
+                                    <span class="lead">{{ order.quantity }} shares</span>
+                                    {% if order.original_quantity!=order.quantity %}
+                                        <small class="text-muted" style="display:block;">
+                                            (out of {{ order.original_quantity }} originally)
+                                        </small>
+                                    {% endif %}
+                                </span>
                             </div>
                         </div>
                     {% endfor %}
                 {% endif %}
+
+                {% set match_history = user.match_history(stonk.id) %}
+                {% if match_history %}
+                    <h2 style="padding-top: 30px;">History:</h2> 
+                    {% for match in match_history %}
+                        <div class="card" style="margin-top: 20px;">
+                            <div class="card-header">
+                                <h4 style="margin-bottom:0; display:inline-block;">
+                                    {{ "Bought" if match.buy else "Sold" }}
+                                </h4>
+                                <span style="float:right;">
+                                    {{ match.happened_time | format_datetime }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <span class="lead">
+                                    {{ match.quantity }} share{{ 's' if match.quantity!=1 else ''}}
+                                    @ ${{ match.price | format_money }}
+                                </span>
+                                <span style="float: right;" class="lead">
+                                    Total: ${{ (match.quantity*match.price) | format_money }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {#
+                {% if (not open_orders) and (not match_history) %}
+                    <h1 style="text-align:center; margin-top:150px;">No Open Positions</h1>
+                {% endif %}
+                #}
             {% endif %}
         </div>
         <div class="col-3">
