@@ -1,7 +1,7 @@
 from heapq import heappop, heappush
 from flask import Blueprint
 import posix_ipc
-from models import Order, Position, Match, User, get_time, ORDER_BUY, Stonk, safe_get_or_create
+from models import db, Order, Position, Match, User, get_time, ORDER_BUY, Stonk, safe_get_or_create
 from utils import open_message_queue
 
 buys: dict[int, list[Order]] = {} # bids
@@ -9,73 +9,72 @@ sells: dict[int, list[Order]] = {} # asks
 
 handled_orders: set[int] = set()
 
-def execute_order(buy: Order, sell: Order, stonk_id: int) -> bool:
+def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order, bool]:
     # For now, assume that only one orderbook is running at a time
     # then the things that may have race conditions are
     # just the user's moneys
 
-    # this completely fails the match if precondition
-    # fail and kicks out the offending order(s).
-    # more sophisticated partial matchings can
-    # prolly be done
+    with db.atomic():
+        buy = Order.select().where(Order.id==buy.id).for_update().get()
+        sell = Order.select().where(Order.id==sell.id).for_update().get()
+        
+        buy_user = User.select().where(User.id==buy.user_id).for_update().get()
 
-    #TODO: use locking to deal with order cancellation
+        sell_pos, _ = safe_get_or_create(Position,
+            user_id = sell.user_id,
+            stonk_id = stonk_id,
+            defaults = {"quantity": 0}
+        )
 
-    match = Match(seller_order_id = sell, buyer_order_id=buy, happened_time=get_time(), stonk_id=stonk_id)
-    match.quantity = min(buy.quantity, sell.quantity)
+        buy_pos, _ = safe_get_or_create(Position,
+            user_id = buy.user_id,
+            stonk_id = stonk_id,
+            defaults = {"quantity": 0}
+        )
 
-    match.price = (buy.price+sell.price) // 2
-    spent = match.quantity * match.price
+        buy_pos = Position.select().where(Position.id==buy_pos.id).for_update().get()
+        sell_pos = Position.select().where(Position.id==sell_pos.id).for_update().get()
 
-    buy_pos, _ = safe_get_or_create(Position,
-        user_id = buy.user_id,
-        stonk_id = stonk_id,
-        defaults = {"quantity": 0}
-    )
-    sell_pos, _ = safe_get_or_create(Position,
-        user_id = sell.user_id,
-        stonk_id = stonk_id,
-        defaults = {"quantity": 0}
-    )
+        match = Match(seller_order_id = sell.id, buyer_order_id=buy.id, happened_time=get_time(), stonk_id=stonk_id)
+        match.quantity = min(buy.quantity, sell.quantity)
 
-    if sell_pos.quantity < match.quantity:
-        sell.cancelled = True
-        sell.cancelled_time = get_time()
-        sell.cancelled_reason = Order.CANCEL_REASONS.INSUFFICIENT_POSITION
-        sell.save()
-        return False
+        match.price = (buy.price+sell.price) // 2
+        spent = match.quantity * match.price
 
-    # TODO: readd this
-    # if buy.user.balance < spent:
-    #    return False
+        if sell.cancelled or buy.cancelled or buy_pos.quantity==0 or sell_pos.quantity==0:
+            return buy, sell, False
 
-    #TODO: use transactions for actual
-    # db issues and speeeeed
+        if sell_pos.quantity < match.quantity:
+            sell.cancelled = True
+            sell.cancelled_time = get_time()
+            sell.cancelled_reason = Order.CANCEL_REASONS.INSUFFICIENT_POSITION
+            sell.save()
+            return buy, sell, False
 
-    succ = User.update(balance=User.balance-spent).where(User.id==buy.user_id, User.balance>=spent).execute()
-    if not succ:
-        buy.cancelled = True
-        buy.cancelled_time = get_time()
-        buy.cancelled_reason = Order.CANCEL_REASONS.INSUFFICIENT_BALANCE
+        if buy_user.balance < spent:
+            buy.cancelled = True
+            buy.cancelled_time = get_time()
+            buy.cancelled_reason = Order.CANCEL_REASONS.INSUFFICIENT_BALANCE
+            buy.save()
+            return buy, sell, False
+
+        User.update(balance=User.balance-spent).where(User.id==buy.user_id).execute()
+        User.update(balance=User.balance+spent).where(User.id==sell.user_id).execute()
+
+        Position.update(quantity=Position.quantity+match.quantity).where(Position.id==buy_pos.id).execute()
+        Position.update(quantity=Position.quantity-match.quantity).where(Position.id==sell_pos.id).execute()
+        #TODO autodelete position when 0
+
+        Stonk.update(latest_price=match.price).where(Stonk.id==stonk_id).execute()
+
+        buy.quantity -= match.quantity
+        sell.quantity -= match.quantity
         buy.save()
-        return False
+        sell.save()
 
-    User.update(balance=User.balance+spent).where(User.id==sell.user_id).execute()
+        match.save()
 
-    Position.update(quantity=Position.quantity+match.quantity).where(Position.id==buy_pos.id).execute()
-    Position.update(quantity=Position.quantity-match.quantity).where(Position.id==sell_pos.id).execute()
-    #TODO autodelete position when 0
-
-    Stonk.update(latest_price=match.price).where(Stonk.id==stonk_id).execute()
-
-    buy.quantity -= match.quantity
-    sell.quantity -= match.quantity
-    buy.save()
-    sell.save()
-
-    match.save()
-
-    return True
+        return buy, sell, True
 
 def process_order(order: Order) -> None:
     if order.id in handled_orders: return
@@ -98,7 +97,7 @@ def process_order(order: Order) -> None:
         buy = heappop(cur_buys)
         sell = heappop(cur_sells)
 
-        execute_order(buy, sell, order.stonk_id)
+        buy, sell, _ = execute_order(buy, sell, order.stonk_id)
 
         if buy.quantity and not buy.cancelled: heappush(cur_buys, buy)
         if sell.quantity and not sell.cancelled: heappush(cur_sells, sell)
