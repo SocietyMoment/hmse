@@ -3,8 +3,8 @@ import uuid
 import functools
 from flask import redirect, Blueprint, make_response, request, abort
 import requests
-from models import User, get_time, LoginSession
-from utils import safe_get_or_create, BASE_URL, CLIENT_ID
+from models import User, get_time, LoginSession, safe_get_or_create
+from utils import BASE_URL, CLIENT_ID
 
 auth_bp = Blueprint('auth', __name__)
 

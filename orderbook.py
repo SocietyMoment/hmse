@@ -1,8 +1,8 @@
 from heapq import heappop, heappush
 from flask import Blueprint
 import posix_ipc
-from models import Order, Position, Match, User, get_time, ORDER_BUY, Stonk
-from utils import open_message_queue, safe_get_or_create
+from models import Order, Position, Match, User, get_time, ORDER_BUY, Stonk, safe_get_or_create
+from utils import open_message_queue
 
 buys: dict[int, list[Order]] = {} # bids
 sells: dict[int, list[Order]] = {} # asks

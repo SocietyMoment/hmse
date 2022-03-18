@@ -1,16 +1,17 @@
 import time
-from typing import TypeVar
+from typing import TypeVar, Type
 import enum
 import functools
 import uuid
 from flask import Blueprint
 import peewee as pw
+from utils import DB_NAME 
 
 models_bp = Blueprint('models', __name__)
 
 #TODO: pool
 #TODO: turn on caching
-db = pw.MySQLDatabase('test')
+db = pw.MySQLDatabase(DB_NAME)
 
 # all times in db are integer microseconds
 # even when not needed, for easyness
@@ -26,6 +27,15 @@ class BaseModel(pw.Model):
         database = db
 
 ModelType = TypeVar('ModelType', bound=BaseModel)
+def safe_get_or_create(model: Type[ModelType], *args, defaults={}, **kwargs) -> tuple[ModelType, bool]:
+    obj = model.get_or_none(*args, **kwargs)
+    if obj is not None: return obj, False
+
+    try:
+        with db.atomic():
+            return model.create(*args, **kwargs, **defaults), True
+    except pw.IntegrityError:
+        return model.get(*args, **kwargs), False
 
 class User(BaseModel):
     id = pw.IntegerField(primary_key=True) # rdrama's uid

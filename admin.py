@@ -1,8 +1,7 @@
 import shutil
 from flask import Blueprint
 import click
-from models import db, Stonk, BaseModel, Position, User
-from utils import safe_get_or_create
+from models import db, Stonk, BaseModel, Position, User, safe_get_or_create
 
 admin_bp = Blueprint('admin', __name__)
 

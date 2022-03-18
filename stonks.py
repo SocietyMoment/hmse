@@ -6,6 +6,10 @@ from utils import open_message_queue
 
 stonks_bp = Blueprint('stonks', __name__)
 
+@stonks_bp.app_context_processor
+def jinja_stonks_list():
+    return dict(all_stonks=Stonk.select(Stonk.id, Stonk.name))
+
 @stonks_bp.route("/stonks")
 @login_required(fail=False)
 def stonks_list(user):
