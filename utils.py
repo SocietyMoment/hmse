@@ -1,5 +1,6 @@
 import os
 from flask import Blueprint
+from jinja2 import Markup
 import peewee as pw
 import posix_ipc
 
@@ -20,3 +21,10 @@ utils_bp = Blueprint('utils', __name__)
 def format_money(money: int) -> str:
     return '{:0,.2f}'.format(money/100)
 utils_bp.add_app_template_filter(format_money)
+
+def format_datetime(timestamp: int) -> str:
+    return Markup("<span data-timestamp='" 
+        + str(timestamp)
+        + "' class='timestamp-format'></span>"
+    )
+utils_bp.add_app_template_filter(format_datetime)
