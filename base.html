@@ -13,8 +13,42 @@
     .nav-item {
         padding-left: 20px;
     }
-    // .stonk-search-item:active .text-muted {
-    //     color: white!important;
+
+    .stonk-search-item:active,
+    .stonk-search-item:focus,
+    .stonk-search-item:hover {
+        background: #007bff;
+        color: white!important;
+        outline: none;
+    }
+
+    .stonk-search-item:active .text-muted,
+    .stonk-search-item:focus .text-muted,
+    .stonk-search-item:hover .text-muted{
+        color: white!important;
+    }
+
+    .stonk-search-item:active img,
+    .stonk-search-item:focus img,
+    .stonk-search-item:hover img {
+        filter: contrast(0) brightness(10); 
+    }
+
+    body {
+        padding-bottom: 70px;
+    }
+
+    // footer stuff
+    // html {
+    //   height: 100%;
+    //   box-sizing: border-box;
+    // }
+
+    // body {
+    //     position: relative;
+    //     margin: 0;
+    //     padding-bottom: 70px;
+    //     min-height: 100%;
     // }
 </style>
 
@@ -33,7 +67,7 @@
             style="display: inline-block; flex-grow: 1; text-align:center;">
             <div style="width: 40%; display:inline-block;" class="input-group">
                 <input class="form-control" type="search" id="stonk-search"
-                    placeholder="Search stonks by ticker..." aria-label="Search stonks by ticker"
+                    placeholder="Search stonks by ticker... (shortcut /&#8201;)" aria-label="Search stonks by ticker (shortcut /)"
                     data-toggle="dropdown" style="width: 100%; border-radius: 4px;"
                     autocomplete="off">
                 <div class="dropdown-menu" aria-labelledby="stonk-search" 
@@ -66,13 +100,28 @@
             {% endif %}
         </ul>
     </div>
-
-
 </nav>
 
 {% block content %}{% endblock %}
 
+{#
+<footer class="navbar bg-dark navbar-dark"
+    style="position: absolute; right:0; bottom:0; left:0;">
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="https://rdrama.net/">RDrama</a>
+        </li>
+    </ul>
+</footer>
+#}
+
 <script>
+    for (let e of $("span.timestamp-format")) {
+        console.log(e);
+        let ts = parseInt(e.dataset.timestamp);
+        e.innerHTML = (new Date(ts/1000)).toLocaleString();
+    }
+
     let all_stonks_list = [
         {% for s in all_stonks %}
             {
@@ -112,5 +161,13 @@
         e.preventDefault();
         document.location.href = $("#stonk-search-results")[0].firstElementChild.href;
         return false;
+    });
+
+    $(window).keyup((e)=>{
+        if (e.which===191 && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
+            e.preventDefault();
+            $("#stonk-search").click();
+            return false;
+        }
     });
 </script>
