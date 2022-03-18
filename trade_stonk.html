@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Trade {{ stonk.ticker() }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row" style="margin-top: 50px;">
+        <h2 class="col-8">
+            Trade {{ stonk.ticker() }}
+            <span class="text-muted">(<img style="height:1em; width:auto; padding:0;margin:0;" src="/img/stonk-icons/icon_{{ stonk.id }}">
+            <span style="position: relative; top: 3px;">{{ stonk.name }}</span>)</span>
+        </h2>
+        <div class="col-4">
+            <a style="float:right; margin-right: 20px;" class="btn btn-secondary" href="/stonks/{{ stonk.ticker() }}">
+                Back to listing
+            </a>
+        </div>
+    </div>
+    <hr>
+
+    <!--<div class="col-3" style="padding-top: 30px; text-align:right;">
+        <h2>${{ stonk.latest_price | format_money }}</h2>
+    </div>-->
+    <form method="post">
+        <div class="custom-control custom-radio">
+            <input type="radio" id="buy_radio" value="buy" name="buy_sell" class="custom-control-input" required checked>
+            <label class="custom-control-label lead" for="buy_radio"><span style="position:relative;bottom:.2em;">Buy</span></label>
+        </div>
+        <div class="custom-control custom-radio">
+            <input type="radio" id="sell_radio" value="sell" name="buy_sell" class="custom-control-input" required>
+            <label class="custom-control-label lead" for="sell_radio"><span style="position:relative;bottom:.2em;">Sell</span></label>
+        </div>
+
+        <div class="form-group" style="margin-top: 30px;">
+            <label for="quantity" class="lead">Quantity:</label>
+            <input type="number" class="form-control form-control-lg" id="quantity" placeholder="Quantity of stonks to trade" name="quantity" required min="1">
+        </div>
+
+        <div class="form-group" style="margin-top: 30px;">
+            <label for="price" class="lead">Order Price:</label>
+            <input type="number" class="form-control form-control-lg" id="price" placeholder="Price of limit order (ex: 12.34)" name="price" required min="0.01" step="0.01">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="margin-top: 30px;">Place Order</button>
+
+    </form>
+</div>
+{% endblock %}

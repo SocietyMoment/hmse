@@ -1,0 +1,8 @@
+*.vimrc
+tags
+pylintrc
+Drama/
+venv/
+__pycache__/
+.pytype/
+img/stonk-icons/

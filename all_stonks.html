@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}All Stonks{% endblock %}
+
+{% block header %}
+    <style>
+        td {
+            position: relative;
+        }
+        td > a.row-link {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 style="margin-top: 50px; margin-bottom: 30px;">All Stonks</h2>
+
+    <table class="table table-hover" style="font-size: 16pt;">
+        <thead>
+            <tr>
+                <th>Ticker</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stonk in stonks %}
+                {% set ticker = stonk.ticker() %}
+                {% set surl = "/stonks/"+ticker %}
+                <tr>
+                    <td>
+                        <a href="{{surl}}" class="row-link"></a>
+                        <img style="height: 2em; width:auto;" src="img/stonk-icons/icon_{{ stonk.id }}">
+                        <span style="margin-top: .5em; margin-left:10px;display:inline-block;"><strong>{{ stonk.ticker() }}</strong></span>
+                    </td>
+                    <td>
+                        <a href="{{surl}}" class="row-link"></a>
+                        <div style="margin-top: .5em;">{{ stonk.name }}</div>
+                    </td>
+                    <td>
+                        <a href="{{surl}}" class="row-link"></a>
+                        <div style="margin-top: .5em;">${{ stonk.latest_price | format_money }}</div>
+                    </td>
+                    <td>
+                        <a class="btn btn-primary stretched-link" href="{{surl}}">View</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

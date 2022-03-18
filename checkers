@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+pytype *.py
+pylint *.py
+echo "done checking"

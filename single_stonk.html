@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ stonk.ticker() }}{% endblock %}
+
+{% block header %}
+    <style>
+        a.disabled, a.disabled:visited, a.disabled:active, a.disabled:hover {
+          /* Make the disabled links grayish*/
+          color: gray !important;
+          /* And disable the pointer events */
+          pointer-events: none;
+        }
+   </style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row" style="margin-top: 25px;">
+        <div class="col-3" style="padding-top: 30px; padding-right: 60px;">
+            <img style="width:100%; height:auto;" src="/img/stonk-icons/icon_{{ stonk.id }}">
+        </div>
+        <div class="col-4" style="padding-top: 30px;">
+            <h1 class="display-3"><strong>{{ stonk.ticker() }}</strong></h1>
+            <h2 class="text-muted" style="margin-left: 8px;">{{ stonk.name }}</h2>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-3" style="padding-top: 30px; text-align:right;">
+            <h2 class="display-3">${{ stonk.latest_price | format_money }}</h2>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 50px;">
+        <div class="col-9">
+            <a class="btn btn-primary btn-lg" style="width:100%;"
+                {% if user %}href="/trade?id={{ stonk.id }}">Trade {{ stonk.ticker() }}
+                {% else %}href="/login">Login to Trade {{ stonk.ticker() }}
+                {% endif %}
+            </a>
+            {% if user %}
+                {% set open_orders = user.open_orders(stonk.id) %}
+                {% if open_orders %}
+                    <h2 style="padding-top: 30px;">Open Orders:</h2> 
+                    {% for order in open_orders %}
+                        <div class="card" style="margin-top: 20px;">
+                            <div class="card-header">
+                                <h4 style="margin-bottom:0; display:inline-block;">
+                                    {{ "Buy" if order.type==ORDER_BUY else "Sell" }}
+                                </h4>
+                                <a onclick="cancel_order({{ order.id }}, this)" href="#" class="text-danger" style="float: right;">
+                                    Cancel Order
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <span class="lead">${{ order.price | format_money }}</span>
+                                <span class="lead" style="float: right;">{{ order.quantity }} shares</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </div>
+        <div class="col-3">
+            <div style="margin-top: -5px; font-size: 16pt; white-space: pre-wrap;">{{ stonk.description }}</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function cancel_order(id, e) {
+        e.classList.add("disabled");
+
+        $.ajax({
+            url: "/cancel_order?id="+id,
+            type: 'POST',
+            dataType: "json",
+            success: function(result) {
+                document.location.reload();
+            },
+            error: (function(e, result) {
+                e.classList.remove("disabled");
+                try {
+                    alert("Error: " + result.responseJSON.error);
+                } catch (e) {
+                    alert("Error: " + result.status + " " + result.statusText);
+                }
+            }).bind(null, e)
+        });
+
+        return false;
+    }
+</script>
+{% endblock %}

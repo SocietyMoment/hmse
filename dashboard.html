@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3 class="text-muted" style="margin-top: 40px;">Dashboard</h3>
+    <hr>
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-9">
+            <h1 style="font-size: 60pt;">Equity: ${{ user.equity() | format_money }}</h1>
+        </div>
+        <div class="col-3">
+            <h3>Gain: 25.67 C</h3>
+            <h3>Money: ${{ user.balance | format_money }}</h3>
+        </div>
+    </div>
+</div>
+{% endblock %}
