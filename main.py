@@ -5,7 +5,7 @@ from orderbook import orderbook_bp
 from admin import admin_bp
 from stonks import stonks_bp
 from money import money_bp
-from utils import format_money, utils_bp
+from utils import utils_bp
 
 app = Flask(__name__, template_folder='.')
 app.debug = True

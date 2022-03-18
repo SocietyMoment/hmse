@@ -47,7 +47,9 @@ def trade_stonk(user):
     price = round(Decimal(request.form.get("price"))*100)
     quantity = int(request.form.get("quantity"))
     buysell = request.form.get("buy_sell")
-    print(buysell)
+
+    if price<=0 or quantity<=0:
+        abort(400)
 
     order = Order.create(
         user_id = user.id,
