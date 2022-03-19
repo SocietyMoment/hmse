@@ -113,14 +113,14 @@ def build_orderbook() -> None:
 
 def handle_queue(message_queue: posix_ipc.MessageQueue) -> None:
     print("Starting queue processor")
-    print()
+    print(flush=True)
 
     while 1:
         msg, _ = message_queue.receive()
         order_id = int(msg)
         order = Order.get_or_none(Order.id==order_id)
         if order is None:
-            print("Non existent order id: " + str(order_id))
+            print("Non existent order id: " + str(order_id), flush=True)
             continue
 
         process_order(order)

@@ -1,7 +1,6 @@
 FROM nginx:1.21-alpine
 
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d
+COPY nginx.conf /etc/nginx/nginx.conf
 
 RUN mkdir /usr/src
 RUN mkdir /usr/src/app

@@ -1,25 +1,36 @@
 version: "3.9"
 
+x-app:
+  &app
+  build: .
+  volumes:
+    - .:/usr/src/app/
+  links:
+    - mariadb:mariadb
+  restart: on-failure
+  env_file:
+    - ./db_env
+    - ./web_env
+
 services:
-  web:
-    build: .
-    command: gunicorn main:app --bind 0.0.0.0:8000
-    expose:
-      - 8000
-    volumes:
-      - .:/usr/src/app/
-    links:
-      - mariadb:mariadb
+  orderbook:
+    << : *app
+    command: flask orderbook run
+    ipc: shareable
     depends_on:
       - mariadb
-    restart: on-failure
-    extra_hosts:
-      - host.docker.internal:host-gateway
     environment:
       - FLASK_APP=main
-    env_file:
-      - ./db_env
-      - ./web_env
+
+  web:
+    << : *app
+    command: gunicorn main:app -b 0.0.0.0:8000 -w 3 -k gevent --preload --max_requests 1000 --max-requests-jitter 500 
+    ipc: "service:orderbook"
+    depends_on:
+      - mariadb
+      - orderbook
+    expose:
+      - 8000
 
   nginx:
     build: ./nginx
@@ -43,4 +54,3 @@ services:
       - 3306
     ports:
       - 3001:3306
-
