@@ -31,7 +31,7 @@ def create_stonk(ticker, name, image_file, description):
     click.echo("Id: " + str(Stonk.convert_ticker(ticker)))
     click.echo("Name: " + name)
     click.echo("Description: " + str(description))
-    # TODO
+    # TODO: fix image file on docker
     click.echo("Image File (this is broken on docker btw): " + image_file)
     click.echo("")
 

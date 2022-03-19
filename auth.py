@@ -1,20 +1,31 @@
 from typing import Union
 import uuid
+import urllib
 import functools
-from flask import redirect, Blueprint, make_response, request, abort
+from flask import redirect, Blueprint, make_response, request, abort, render_template
 import requests
 from models import User, get_time, LoginSession, safe_get_or_create
-from utils import BASE_URL, CLIENT_ID
+from utils import DRAMA_BASE_URL, DRAMA_CLIENT_ID
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route("/login")
 def login():
-    return redirect(BASE_URL+"authorize/?client_id="+CLIENT_ID)
+    drama_auth_url = DRAMA_BASE_URL+"authorize/?client_id="+DRAMA_CLIENT_ID
+
+    redir = request.args.get("redirect")
+    if redir:
+        resp = make_response(render_template("login.html", drama_auth_url=drama_auth_url))
+        resp.set_cookie('redirect_url', redir)
+        return resp
+
+    resp = make_response(redirect(drama_auth_url))
+    resp.set_cookie('redirect_url', '', expires=0)
+    return resp
 
 def get_user_from_drama(access_token) -> tuple[User, bool]:
     resp = requests.get(
-        BASE_URL+"@me",
+        DRAMA_BASE_URL+"@me",
         headers={"Authorization": access_token}
     ).json()
 
@@ -34,12 +45,14 @@ def handle_login():
     user, new = get_user_from_drama(access_token)
     session = LoginSession.create(user_id = user.id, drama_access_token=access_token)
 
-    redirect_url = '/'
+    redirect_url = request.cookies.get("redirect_url") or '/'
+    #TODO: welcome
     if new:
         redirect_url += '?welcome'
 
     resp = make_response(redirect(redirect_url))
     resp.set_cookie('session_id', str(session.id))
+    resp.set_cookie('redirect_url', '', expires=0)
     return resp
 
 def check_login() -> Union[User, None]:
@@ -54,14 +67,16 @@ def check_login() -> Union[User, None]:
 
     return session.user
 
-#TODO redirect urls
 def login_required(fail=True):
     def inner_decorator(route):
         @functools.wraps(route)
         def func(*args, **kwargs):
             user = check_login()
             if user is None and fail:
-                return redirect('/')
+                return redirect(
+                    'login?redirect='+
+                    urllib.parse.quote_plus(request.url)
+                )
 
             return route(user, *args, **kwargs)
 

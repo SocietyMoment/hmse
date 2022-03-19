@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block header %}
+    <style>
+        body {
+            height: 100%;
+        }
+        html {
+            height: 100%;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="background-color: #f5f5f5; height: 100%;">
+    <div style="padding-top: 30vh; width: 50vh; margin-left:auto;
+        margin-right:auto; text-align: center;">
+        <h3 style="text-align: center">Sign in to access this page</h3>
+        <a class="btn btn-lg btn-primary" style="width: 30vh; margin-top: 30px;"
+            type="submit" href={{ drama_auth_url }}>Sign in</a>
+    </div>
+</div>
+{% endblock %}

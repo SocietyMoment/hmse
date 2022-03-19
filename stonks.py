@@ -77,14 +77,14 @@ def cancel_order(user):
     if order.cancelled:
         return {"error": "Order with id %d not found" % int(request.args.get("id"))}, 409
 
-    #TODO race conditions
-
     succ = Order.update(
         cancelled=True,
         cancelled_time=get_time(),
         cancelled_reason=Order.CANCEL_REASONS.USER_REQUEST,
     ).where(
-        Order.id==order.id
+        Order.id==order.id,
+        ~Order.cancelled,
+        Order.quantity!=0
     ).execute()
 
     if succ==0:

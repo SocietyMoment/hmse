@@ -11,11 +11,10 @@ DB_USER = os.environ.get("MARIADB_USER")
 DB_PASSWORD = os.environ.get("MARIADB_PASSWORD")
 DB_HOST = os.environ.get("DB_HOST")
 
-#TODO: Fix names
-BASE_URL = os.environ.get("BASE_URL")
-CLIENT_ID = os.environ.get("CLIENT_ID")
-HOLDING_ACCOUNT_USERNAME = os.environ.get("HOLDING_ACCOUNT_USERNAME")
-HOLDING_ACCOUNT_ACCESS_TOKEN = os.environ.get("HOLDING_ACCOUNT_ACCESS_TOKEN")
+DRAMA_BASE_URL = os.environ.get("DRAMA_BASE_URL")
+DRAMA_CLIENT_ID = os.environ.get("DRAMA_CLIENT_ID")
+DRAMA_HOLDING_ACCOUNT_USERNAME = os.environ.get("DRAMA_HOLDING_ACCOUNT_USERNAME")
+DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN = os.environ.get("DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN")
 
 def open_message_queue(read: bool, write: bool) -> posix_ipc.MessageQueue:
     return posix_ipc.MessageQueue(MESSAGE_QUEUE_NAME, posix_ipc.O_CREAT, 500, read=read, write=write)

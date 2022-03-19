@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request
 import requests
 from models import LoginSession, User
 from auth import login_required
-from utils import BASE_URL, HOLDING_ACCOUNT_USERNAME, HOLDING_ACCOUNT_ACCESS_TOKEN
+from utils import DRAMA_BASE_URL, DRAMA_HOLDING_ACCOUNT_USERNAME, DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN
 
 money_bp = Blueprint('money', __name__)
 
@@ -20,7 +20,7 @@ def deposit(user):
         LoginSession.id == session_id).first().drama_access_token
 
     resp = requests.post(
-        f"{BASE_URL}@{HOLDING_ACCOUNT_USERNAME}/transfer_coins",
+        f"{DRAMA_BASE_URL}@{DRAMA_HOLDING_ACCOUNT_USERNAME}/transfer_coins",
         headers = {"Authorization": drama_access_token},
         data = {"amount": str(amount)}
     )
@@ -42,14 +42,16 @@ def withdraw(user):
 
     amount = int(request.form.get("amount"))
 
-    #TODO negative
+    if amount <= 0:
+        abort(400)
+
     succ = User.update(balance=User.balance-amount*100).where(User.id==user.id, User.balance>=amount*100).execute()
     if not succ:
         return render_template("withdraw.html", error="Insufficient balance!", user=user)
 
     resp = requests.post(
-        f"{BASE_URL}@{user.username}/transfer_coins",
-        headers = {"Authorization": HOLDING_ACCOUNT_ACCESS_TOKEN},
+        f"{DRAMA_BASE_URL}@{user.username}/transfer_coins",
+        headers = {"Authorization": DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN},
         data = {"amount": str(amount)}
     )
 
