@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    command: gunicorn main:app --bind 0.0.0.0:8000
+    expose:
+      - 8000
+    volumes:
+      - .:/usr/src/app/
+    links:
+      - mariadb:mariadb
+    depends_on:
+      - mariadb
+    restart: on-failure
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - FLASK_APP=main
+    env_file:
+      - ./db_env
+      - ./web_env
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - .:/usr/src/app/
+    ports:
+      - 3000:80
+    links:
+      - web:web
+    restart: on-failure
+    depends_on:
+      - web
+
+  mariadb:
+    image: mariadb:10.7.3
+    volumes:
+      - ./sql_data:/var/lib/mysql/
+    env_file:
+      - ./db_env
+    expose:
+      - 3306
+    ports:
+      - 3001:3306
+

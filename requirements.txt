@@ -1,0 +1,6 @@
+Flask==2.0.3
+gunicorn==20.1.0
+peewee==3.14.10
+posix-ipc==1.0.5
+PyMySQL==1.0.2
+requests==2.27.1

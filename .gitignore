@@ -6,3 +6,4 @@ venv/
 __pycache__/
 .pytype/
 img/stonk-icons/
+sql_data/
