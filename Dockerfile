@@ -5,7 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
 RUN apt-get install -y python
 RUN apt-get install -y python3-pip
 
-RUN python3 --version
+RUN apt-get install -y curl
 
 WORKDIR /usr/src/app
 

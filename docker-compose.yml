@@ -24,7 +24,7 @@ services:
 
   web:
     << : *app
-    command: gunicorn main:app -b 0.0.0.0:8000 -w 3 -k gevent --preload --max_requests 1000 --max-requests-jitter 500 
+    command: gunicorn main:app -b 0.0.0.0:8000 -w 3 -k gevent --preload --max-requests 1000 --max-requests-jitter 500 
     ipc: "service:orderbook"
     depends_on:
       - mariadb
