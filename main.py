@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, Blueprint
-from models import db, models_bp
+from models import db, models_bp, Position, Stonk
 from auth import auth_bp, login_required
 from orderbook import orderbook_bp
 from admin import admin_bp
 from stonks import stonks_bp
 from money import money_bp
 from utils import utils_bp
+from playhouse.shortcuts import model_to_dict
+
 
 app = Flask(__name__, template_folder='.')
 app.debug = True
@@ -37,5 +39,18 @@ def _db_close(exc):
 def root(user):
     if user is None:
         return render_template('index.html')
-    return render_template('dashboard.html', user=user, welcome='welcome' in request.args)
+
+    positions = Position.select(
+        Position.user_id,
+        Position.quantity,
+        Position.stonk_id,
+        Stonk.id,
+        Stonk.latest_price,
+    ).join(Stonk).where(
+        Stonk.id==Position.stonk_id,
+        Position.user_id==user.id
+    )
+
+    return render_template('dashboard.html', user=user,
+        positions=positions, welcome='welcome' in request.args)
 

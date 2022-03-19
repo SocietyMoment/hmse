@@ -14,5 +14,37 @@
             <h2 style="text-align:right;">Cash: ${{ user.balance | format_money }}</h2>
         </div>
     </div>
+
+    {% if positions %}
+        <h2 style="margin-top: 50px;">Open Positions:</h2>
+        {% for position in positions %}
+            <div class="card" style="width: 25rem; display: inline-block;
+                margin: 50px;">
+                <div class="card-header">
+                    <h4 style="margin-bottom:0; display:inline-block;">
+                        <img src="/img/stonk-icons/icon_{{ position.stonk_id }}"
+                            style="height: 1em; width: auto;">
+                        <span style="position:relative; top: .12em;
+                            display:inline-block;">{{ position.stonk.ticker() }}</span>
+                    </h4>
+                    <span style="float:right;" class="lead">
+                        Price: ${{ position.stonk.latest_price | format_money }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title" style="text-align:center">
+                        ${{ (position.quantity*position.stonk.latest_price) | format_money }}
+                    </h2>
+                    <div class="lead">
+                        <a href="/stonks/{{ position.stonk.ticker() }}"
+                            class="card-link stretched-link">View</a>
+                        <span style="float: right;">
+                            {{ position.quantity }} shares
+                        </span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}
