@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ stonk.ticker() }}{% endblock %}
+
+{% block header %}
+    <style>
+        a.disabled, a.disabled:visited, a.disabled:active, a.disabled:hover {
+          /* Make the disabled links grayish*/
+          color: gray !important;
+          /* And disable the pointer events */
+          pointer-events: none;
+        }
+        .orderbook-middle {
+            width:50px;
+        }
+
+   </style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row" style="margin-top: 50px; margin-bottom: 30px;">
+        <h2 class="col-8">
+            Orderbook for {{ stonk.ticker() }}
+        </h2>
+        <div class="col-4">
+            <a style="float:right;" class="btn btn-secondary" href="/stonks/{{ stonk.ticker() }}">
+                Back to listing
+            </a>
+        </div>
+    </div>
+    <table class="table table-hover" style="font-size: 16pt; table-layout: fixed;">
+        <thead id="orderbook-header">
+            <tr class="text-white" style="background: #4e8189;">
+                <th colspan="2">Bids</th>
+                <th class="orderbook-middle text-warning" style="text-align:center">{{ stonk.latest_price | format_money }}</th>
+                <th colspan="2" style="text-align:right">Asks</th>
+            </tr>
+            {#
+            <tr>
+                    <td>Amount</td>
+                    <td style="text-align:right;">Price</td>
+                    <td>Price</td>
+                    <td style="text-align:right;">Amount</td>
+            </tr>
+            #}
+        </thead>
+        <tbody>
+            {% for bid, ask in orders %}
+                <tr>
+                    <td>{{ bid.quantity }}</td>
+                    <td style="text-align:right;" class="text-success"><strong>{{ bid.price | format_money }}</strong></td>
+                    <td class="orderbook-middle"></td>
+                    <td class="text-danger"><strong>{{ ask.price | format_money }}</strong></td>
+                    <td style="text-align:right;">{{ ask.quantity }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function cancel_order(id, e) {
+        e.classList.add("disabled");
+
+        $.ajax({
+            url: "/cancel_order?id="+id,
+            type: 'POST',
+            dataType: "json",
+            success: function(result) {
+                document.location.reload();
+            },
+            error: (function(e, result) {
+                e.classList.remove("disabled");
+                try {
+                    alert("Error: " + result.responseJSON.error);
+                } catch (e) {
+                    alert("Error: " + result.status + " " + result.statusText);
+                }
+            }).bind(null, e)
+        });
+
+        return false;
+    }
+</script>
+{% endblock %}

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from itertools import zip_longest
 from flask import Blueprint, render_template, request, abort, redirect
 from models import Stonk, Order, ORDER_BUY, ORDER_SELL, get_time
 from auth import login_required
@@ -32,7 +33,7 @@ def stonk_single_str(user, ticker):
     return return_stonk_view(user, Stonk.convert_ticker(ticker))
 
 
-mq = None
+orderbook_queue = open_message_queue(False, True)
 
 @stonks_bp.route("/trade", methods=["GET", "POST"])
 @login_required()
@@ -62,10 +63,7 @@ def trade_stonk(user):
         cancelled = False,
     )
 
-    global mq
-    if mq is None:
-        mq = open_message_queue(False, True)
-    mq.send(str(order.id))
+    orderbook_queue.send(str(order.id))
 
     return redirect('/stonks/'+stonk.ticker())
 
@@ -93,4 +91,39 @@ def cancel_order(user):
         return {"error": "Failed to update database"}, 500
 
     return {"message": "successfully cancelled order"}, 200
+
+
+def return_orderbook_view(user, ticker: int):
+    stonk = Stonk.get_or_none(Stonk.id==ticker)
+    if stonk is None:
+        abort(404)
+
+    orders = Order.select(
+        Order.price,
+        Order.quantity,
+        Order.stonk_id,
+        Order.type,
+    ).where(
+        Order.stonk_id==ticker,
+        ~Order.cancelled,
+        Order.quantity!=0
+    ).order_by(Order.price)
+
+    orders = list(orders)
+    bid = [o for o in orders if o.type==ORDER_BUY]
+    ask = [o for o in orders if o.type==ORDER_SELL]
+    orders = zip_longest(reversed(bid), ask)
+
+    return render_template("view_orderbook.html", user=user, stonk=stonk, orders=orders)
+
+@stonks_bp.route("/stonks/<int:ticker_num>/orderbook")
+@login_required(fail=False)
+def view_orderbook_int(user, ticker_num: int):
+    return return_orderbook_view(user, ticker_num)
+
+@stonks_bp.route("/stonks/<string:ticker>/orderbook")
+@login_required(fail=False)
+def view_orderbook_str(user, ticker):
+    return return_orderbook_view(user, Stonk.convert_ticker(ticker))
+
 
