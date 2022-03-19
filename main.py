@@ -48,7 +48,8 @@ def root(user):
         Stonk.latest_price,
     ).join(Stonk).where(
         Stonk.id==Position.stonk_id,
-        Position.user_id==user.id
+        Position.user_id==user.id,
+        Position.quantity!=0
     )
 
     return render_template('dashboard.html', user=user,
