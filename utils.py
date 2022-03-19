@@ -6,8 +6,12 @@ import posix_ipc
 
 MESSAGE_QUEUE_NAME = "/HMSE_orderqueue"
 
+DB_NAME = os.environ.get("MARIADB_DATABASE")
+DB_USER = os.environ.get("MARIADB_USER")
+DB_PASSWORD = os.environ.get("MARIADB_PASSWORD")
+DB_HOST = os.environ.get("DB_HOST")
+
 #TODO: Fix names
-DB_NAME = os.environ.get("DB_NAME")
 BASE_URL = os.environ.get("BASE_URL")
 CLIENT_ID = os.environ.get("CLIENT_ID")
 HOLDING_ACCOUNT_USERNAME = os.environ.get("HOLDING_ACCOUNT_USERNAME")

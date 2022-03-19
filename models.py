@@ -5,13 +5,13 @@ import functools
 import uuid
 from flask import Blueprint
 import peewee as pw
-from utils import DB_NAME
+from utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST
 
 models_bp = Blueprint('models', __name__)
 
 #TODO: pool
 #TODO: turn on caching
-db = pw.MySQLDatabase(DB_NAME)
+db = pw.MySQLDatabase(DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
 
 # all times in db are integer microseconds
 # even when not needed, for easyness

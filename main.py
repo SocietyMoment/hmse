@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, Blueprint
 from models import db, models_bp, Position, Stonk
 from auth import auth_bp, login_required
@@ -6,11 +7,8 @@ from admin import admin_bp
 from stonks import stonks_bp
 from money import money_bp
 from utils import utils_bp
-from playhouse.shortcuts import model_to_dict
-
 
 app = Flask(__name__, template_folder='.')
-app.debug = True
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(orderbook_bp)
@@ -20,7 +18,9 @@ app.register_blueprint(money_bp)
 app.register_blueprint(models_bp)
 app.register_blueprint(utils_bp)
 
-app.register_blueprint(Blueprint('images', __name__, static_folder='img'))
+if os.environ.get("FLASK_ENV")=="development": 
+    app.register_blueprint(Blueprint('images', __name__, static_folder='img'))
+    app.debug = True
 
 @app.before_request
 def _db_connect():

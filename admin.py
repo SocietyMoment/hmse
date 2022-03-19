@@ -22,13 +22,17 @@ def create_stonk(ticker, name, image_file, description):
 
     if description is not None:
         description = description.read()
+    if description is None:
+        description = ""
 
     click.echo("You are about to create a stonk with the following values:")
     click.echo("")
     click.echo("Ticker: " + ticker)
+    click.echo("Id: " + str(Stonk.convert_ticker(ticker)))
     click.echo("Name: " + name)
     click.echo("Description: " + str(description))
-    click.echo("Image File: " + image_file)
+    # TODO
+    click.echo("Image File (this is broken on docker btw): " + image_file)
     click.echo("")
 
     click.confirm('Do you want to continue?', abort=True)
