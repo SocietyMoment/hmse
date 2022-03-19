@@ -5,7 +5,7 @@ import functools
 import uuid
 from flask import Blueprint
 import peewee as pw
-from utils import DB_NAME 
+from utils import DB_NAME
 
 models_bp = Blueprint('models', __name__)
 
@@ -27,7 +27,10 @@ class BaseModel(pw.Model):
         database = db
 
 ModelType = TypeVar('ModelType', bound=BaseModel)
-def safe_get_or_create(model: Type[ModelType], *args, defaults={}, **kwargs) -> tuple[ModelType, bool]:
+def safe_get_or_create(model: Type[ModelType], *args, defaults=None, **kwargs) -> tuple[ModelType, bool]:
+    if defaults is None:
+        defaults = {}
+
     obj = model.get_or_none(*args, **kwargs)
     if obj is not None: return obj, False
 
@@ -58,7 +61,7 @@ class User(BaseModel):
         return Order.select().where(
             Order.user_id==self.id,
             Order.stonk_id==stonk_id,
-            Order.cancelled==False,
+            ~Order.cancelled,
             Order.quantity!=0
         )
 
@@ -125,6 +128,10 @@ class Stonk(BaseModel):
     #         order_by(Match.happened_time.desc())
     #     ).first() or 0
 
+# import logging
+# logger = logging.getLogger('peewee')
+# logger.addHandler(logging.StreamHandler())
+# logger.setLevel(logging.DEBUG)
 class Position(BaseModel):
     id = pw.BinaryUUIDField(primary_key=True, default=create_uuid)
 

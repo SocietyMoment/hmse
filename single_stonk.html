@@ -112,6 +112,10 @@
             {% endif %}
         </div>
         <div class="col-3">
+            <div style="text-align: center;">
+                <a href="/stonks/{{ stonk.ticker() }}/orderbook" class="lead text-info">View Orderbook</a>
+            </div>
+            <hr>
             <div style="margin-top: -5px; font-size: 16pt; white-space: pre-wrap;">{{ stonk.description }}</div>
         </div>
     </div>

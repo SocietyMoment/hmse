@@ -17,7 +17,7 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
     with db.atomic():
         buy = Order.select().where(Order.id==buy.id).for_update().get()
         sell = Order.select().where(Order.id==sell.id).for_update().get()
-        
+
         buy_user = User.select().where(User.id==buy.user_id).for_update().get()
 
         sell_pos, _ = safe_get_or_create(Position,
@@ -105,15 +105,18 @@ def process_order(order: Order) -> None:
 def build_orderbook() -> None:
     """ Runs on startup to build orderbook from db"""
 
-    for order in Order.select().where(Order.cancelled==False, Order.quantity!=0).order_by(Order.created_time):
+    for order in Order.select().where(
+        ~Order.cancelled,
+        Order.quantity!=0
+    ).order_by(Order.created_time):
         process_order(order)
 
-def handle_queue(mq: posix_ipc.MessageQueue) -> None:
+def handle_queue(message_queue: posix_ipc.MessageQueue) -> None:
     print("Starting queue processor")
     print()
 
     while 1:
-        msg, _ = mq.receive()
+        msg, _ = message_queue.receive()
         order_id = int(msg)
         order = Order.get_or_none(Order.id==order_id)
         if order is None:
@@ -126,7 +129,7 @@ orderbook_bp = Blueprint('orderbook', __name__)
 
 @orderbook_bp.cli.command("run")
 def run_orderbook():
-    mq = open_message_queue(True, False)
+    message_queue = open_message_queue(True, False)
     build_orderbook()
-    handle_queue(mq)
+    handle_queue(message_queue)
 

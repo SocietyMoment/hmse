@@ -1,7 +1,7 @@
 import os
+from typing import Optional
 from flask import Blueprint
 from jinja2 import Markup
-import peewee as pw
 import posix_ipc
 
 MESSAGE_QUEUE_NAME = "/HMSE_orderqueue"
@@ -18,12 +18,13 @@ def open_message_queue(read: bool, write: bool) -> posix_ipc.MessageQueue:
 
 utils_bp = Blueprint('utils', __name__)
 
-def format_money(money: int) -> str:
+def format_money(money: Optional[int]) -> str:
+    if money is None: return ""
     return '{:0,.2f}'.format(money/100)
 utils_bp.add_app_template_filter(format_money)
 
 def format_datetime(timestamp: int) -> str:
-    return Markup("<span data-timestamp='" 
+    return Markup("<span data-timestamp='"
         + str(timestamp)
         + "' class='timestamp-format'></span>"
     )
