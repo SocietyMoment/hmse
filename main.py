@@ -6,6 +6,7 @@ from orderbook import orderbook_bp
 from admin import admin_bp
 from stonks import stonks_bp
 from money import money_bp
+from text_pages import text_bp
 from utils import utils_bp
 
 app = Flask(__name__, template_folder='.')
@@ -17,8 +18,9 @@ app.register_blueprint(stonks_bp)
 app.register_blueprint(money_bp)
 app.register_blueprint(models_bp)
 app.register_blueprint(utils_bp)
+app.register_blueprint(text_bp)
 
-if os.environ.get("FLASK_ENV")=="development": 
+if os.environ.get("FLASK_ENV")=="development":
     app.register_blueprint(Blueprint('images', __name__, static_folder='img'))
     app.debug = True
 

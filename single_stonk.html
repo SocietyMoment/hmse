@@ -32,7 +32,7 @@
         <div class="col-9">
             <a class="btn btn-primary btn-lg" style="width:100%;"
                 {% if user %}href="/trade?id={{ stonk.id }}">Trade {{ stonk.ticker() }}
-                {% else %}href="/login">Login to Trade {{ stonk.ticker() }}
+                {% else %}href="/trade?id={{ stonk.id }}">Login to Trade {{ stonk.ticker() }}
                 {% endif %}
             </a>
             {% if user %}

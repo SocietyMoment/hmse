@@ -48,11 +48,11 @@
         <tbody>
             {% for bid, ask in orders %}
                 <tr>
-                    <td>{{ bid.quantity }}</td>
-                    <td style="text-align:right;" class="text-success"><strong>{{ bid.price | format_money }}</strong></td>
+                    <td>{{ (bid.quantity) if bid else "" }}</td>
+                    <td style="text-align:right;" class="text-success"><strong>{{ (bid.price | format_money) if bid else "" }}</strong></td>
                     <td class="orderbook-middle"></td>
-                    <td class="text-danger"><strong>{{ ask.price | format_money }}</strong></td>
-                    <td style="text-align:right;">{{ ask.quantity }}</td>
+                    <td class="text-danger"><strong>{{ (ask.price | format_money) if ask else "" }}</strong></td>
+                    <td style="text-align:right;">{{ (ask.quantity) if ask else "" }}</td>
                 </tr>
             {% endfor %}
         </tbody>

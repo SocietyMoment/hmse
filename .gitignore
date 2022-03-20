@@ -7,3 +7,5 @@ __pycache__/
 .pytype/
 img/stonk-icons/
 sql_data/
+ssh_key
+ssh_key.pub

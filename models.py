@@ -7,8 +7,8 @@ import uuid
 from flask import Blueprint
 import peewee as pw
 from playhouse.pool import PooledMySQLDatabase
+from gevent import monkey
 from utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST
-from gevent import monkey;
 
 models_bp = Blueprint('models', __name__)
 
@@ -93,12 +93,12 @@ class User(BaseModel):
         ).order_by(Match.happened_time.desc())
 
     def equity(self) -> int:
-        return Position.select(
+        return (Position.select(
             pw.fn.SUM(Position.quantity*Stonk.latest_price),
             Position.user_id
         ).join(Stonk).where(
             Position.user_id==self.id
-        ).scalar() + self.balance
+        ).scalar() or 0) + self.balance
 
 class LoginSession(BaseModel):
     id = pw.BinaryUUIDField(primary_key=True, default=create_uuid)

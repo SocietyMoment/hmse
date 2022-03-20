@@ -1,5 +1,5 @@
 import uuid
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, abort
 import requests
 from models import LoginSession, User
 from auth import login_required
