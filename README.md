@@ -17,3 +17,16 @@ export HOLDING_ACCOUNT_ACCESS_TOKEN="..."
 8. Run server in separate terminal: `flask run`
 
 Other admin commands are available with `flask admin`
+
+
+# Production
+
+This is not complete, its more for me to rememeber stuff.
+
+1. Install docker-compose version 1.27.4
+2. In prod env, update web_env and .env with prod stuff
+3. Make cert and stonk-icons folders
+4. add certs with `host.pem` and `host-key.pem`
+3. run `docker-compose up mariadb` and close once db created
+5. run admin commands with `docker-compose run orderbook flask admin`
+6. run `docker-compose up`
