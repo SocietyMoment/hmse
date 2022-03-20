@@ -20,6 +20,8 @@ app.register_blueprint(models_bp)
 app.register_blueprint(utils_bp)
 app.register_blueprint(text_bp)
 
+app.url_map.strict_slashes = False
+
 if os.environ.get("FLASK_ENV")=="development":
     app.register_blueprint(Blueprint('images', __name__, static_folder='img'))
     app.debug = True
