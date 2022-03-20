@@ -8,6 +8,8 @@ x-app:
   links:
     - mariadb:mariadb
   restart: on-failure
+  environment:
+    - FLASK_APP=main
   env_file:
     - ./db_env
     - ./web_env
@@ -19,8 +21,6 @@ services:
     ipc: shareable
     depends_on:
       - mariadb
-    environment:
-      - FLASK_APP=main
 
   web:
     << : *app
