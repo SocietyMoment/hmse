@@ -36,6 +36,6 @@ To get shell on running container its `docker-compose exec nginx sh`
 To connect to db, either connect to mariadb container with `bash`
 or use port 3001 exposed externally (`mariadb -P3001 -h 127.0.0.1 -uwebapp -psecret`).
 
+View nginx status stuff:
+`curl https://localhost/nginx_status -k -H "Host: hmse.cash"`
 
-
-curl https://localhost/nginx_status -k -H "Host: hmse.cash"
