@@ -69,6 +69,7 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
         spent = match.quantity * match.price
 
         if sell.cancelled or buy.cancelled or buy_pos.quantity==0 or sell_pos.quantity==0:
+            print("failed because of cancelled " + str(sell.id) + " | " + str(buy.id), flush=True)
             return buy, sell, False
 
         if sell_pos.quantity < match.quantity:
@@ -77,6 +78,7 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
             sell.cancelled_reason = Order.CANCEL_REASONS.INSUFFICIENT_POSITION
             sell.save()
             send_notif(sell, None)
+            print("failed because of not enough stonk " + str(sell.id) + " | " + str(buy.id), flush=True)
             return buy, sell, False
 
         if buy_user.balance < spent:
@@ -85,6 +87,7 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
             buy.cancelled_reason = Order.CANCEL_REASONS.INSUFFICIENT_BALANCE
             buy.save()
             send_notif(buy, None)
+            print("failed because of not enough cash " + str(sell.id) + " | " + str(buy.id), flush=True)
             return buy, sell, False
 
         User.update(balance=User.balance-spent).where(User.id==buy.user_id).execute()
@@ -105,10 +108,13 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
 
         send_notif(buy, match)
         send_notif(sell, match)
+        print("succeeded order " + str(sell.id) + " | " + str(buy.id), flush=True)
         return buy, sell, True
 
 def process_order(order: Order) -> None:
     if order.id in handled_orders: return
+
+    print("Processing order " + str(order.id), flush=True)
 
     if order.stonk_id not in buys:
         buys[order.stonk_id] = []
