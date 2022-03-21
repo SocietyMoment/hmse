@@ -68,7 +68,7 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
         match.price = (buy.price+sell.price) // 2
         spent = match.quantity * match.price
 
-        if sell.cancelled or buy.cancelled or buy_pos.quantity==0 or sell_pos.quantity==0:
+        if sell.cancelled or buy.cancelled or buy.quantity==0 or sell.quantity==0:
             print("failed because of cancelled " + str(sell.id) + " | " + str(buy.id), flush=True)
             return buy, sell, False
 
