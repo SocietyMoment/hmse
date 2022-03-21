@@ -97,7 +97,8 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
         Position.update(quantity=Position.quantity-match.quantity).where(Position.id==sell_pos.id).execute()
         #TODO autodelete position when 0
 
-        Stonk.update(latest_price=match.price).where(Stonk.id==stonk_id).execute()
+        if buy.user_id != sell.user_id:
+            Stonk.update(latest_price=match.price).where(Stonk.id==stonk_id).execute()
 
         buy.quantity -= match.quantity
         sell.quantity -= match.quantity
