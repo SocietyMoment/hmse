@@ -108,13 +108,11 @@ def return_orderbook_view(user, ticker: int):
             Order.quantity,
             Order.stonk_id,
             Order.type,
-            Order.user_id,
-            User.balance,
         ).join(User).where(
             Order.stonk_id==ticker,
             ~Order.cancelled,
             Order.quantity!=0,
-            ((Order.price*Order.quantity)<=User.balance) | Order.type==ORDER_SELL
+            ((Order.price*Order.quantity)<=User.balance) | (Order.type==ORDER_SELL)
         ).order_by(Order.price)
     else:
         orders = Order.select(
