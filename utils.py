@@ -17,7 +17,7 @@ DRAMA_HOLDING_ACCOUNT_USERNAME = os.environ.get("DRAMA_HOLDING_ACCOUNT_USERNAME"
 DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN = os.environ.get("DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN")
 
 def open_message_queue(read: bool, write: bool) -> posix_ipc.MessageQueue:
-    return posix_ipc.MessageQueue(MESSAGE_QUEUE_NAME, posix_ipc.O_CREAT, max_messages=500, read=read, write=write)
+    return posix_ipc.MessageQueue(MESSAGE_QUEUE_NAME, posix_ipc.O_CREAT, max_messages=50, read=read, write=write)
 
 CHRLOOKUP = [""]+list(map(chr, range(65, 91)))
 def ticker_format(val: int) -> str:

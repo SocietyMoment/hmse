@@ -8,6 +8,8 @@ x-app:
   links:
     - mariadb:mariadb
   restart: on-failure
+  sysctls:
+    - fs.mqueue.msg_max=500
   env_file:
     - ./db_env
     - ./web_env
