@@ -39,3 +39,5 @@ or use port 3001 exposed externally (`mariadb -P3001 -h 127.0.0.1 -uwebapp -psec
 View nginx status stuff:
 `curl https://localhost/nginx_status -k -H "Host: hmse.cash"`
 
+To restart gunicorn, do `sudo docker-compose exec web bash`. Then run `ps -eaf` to get pid's for gunicorn. Finally, run, for example: `kill -HUP 1 7 8 9`.
+
