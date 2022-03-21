@@ -66,7 +66,7 @@ def trade_stonk(user):
         cancelled = False,
     )
 
-    print("sending into queue: " + str(order.id))
+    print("sending into queue: " + str(order.id), flush=True)
     orderbook_queue.send(str(order.id))
 
     return redirect('/stonks/'+stonk.ticker())
