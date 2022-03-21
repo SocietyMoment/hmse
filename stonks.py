@@ -1,7 +1,7 @@
 from decimal import Decimal
 from itertools import zip_longest
 from flask import Blueprint, render_template, request, abort, redirect
-from models import Stonk, Order, ORDER_BUY, ORDER_SELL, get_time
+from models import Stonk, Order, ORDER_BUY, ORDER_SELL, get_time, User
 from auth import login_required
 from utils import open_message_queue
 
@@ -52,6 +52,9 @@ def trade_stonk(user):
     if price<=0 or quantity<=0:
         abort(400)
 
+    if price*quantity >= 2*10**9:
+        abort(400)
+
     order = Order.create(
         user_id = user.id,
         type = ORDER_BUY if buysell=="buy" else ORDER_SELL,
@@ -99,16 +102,31 @@ def return_orderbook_view(user, ticker: int):
     if stonk is None:
         abort(404)
 
-    orders = Order.select(
-        Order.price,
-        Order.quantity,
-        Order.stonk_id,
-        Order.type,
-    ).where(
-        Order.stonk_id==ticker,
-        ~Order.cancelled,
-        Order.quantity!=0
-    ).order_by(Order.price)
+    if "debug_valid" in request.args:
+        orders = Order.select(
+            Order.price,
+            Order.quantity,
+            Order.stonk_id,
+            Order.type,
+            Order.user_id,
+            User.balance,
+        ).join(User).where(
+            Order.stonk_id==ticker,
+            ~Order.cancelled,
+            Order.quantity!=0,
+            ((Order.price*Order.quantity)<=User.balance) | Order.type==ORDER_SELL
+        ).order_by(Order.price)
+    else:
+        orders = Order.select(
+            Order.price,
+            Order.quantity,
+            Order.stonk_id,
+            Order.type,
+        ).where(
+            Order.stonk_id==ticker,
+            ~Order.cancelled,
+            Order.quantity!=0
+        ).order_by(Order.price)
 
     orders = list(orders)
     bid = [o for o in orders if o.type==ORDER_BUY]
