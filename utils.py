@@ -19,6 +19,14 @@ DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN = os.environ.get("DRAMA_HOLDING_ACCOUNT_ACCES
 def open_message_queue(read: bool, write: bool) -> posix_ipc.MessageQueue:
     return posix_ipc.MessageQueue(MESSAGE_QUEUE_NAME, posix_ipc.O_CREAT, 500, read=read, write=write)
 
+CHRLOOKUP = [""]+list(map(chr, range(65, 91)))
+def ticker_format(val: int) -> str:
+    ret = ""
+    for _ in range(6):
+        ret += CHRLOOKUP[val%27]
+        val //= 27
+    return ret
+
 utils_bp = Blueprint('utils', __name__)
 
 def format_money(money: Optional[int]) -> str:

@@ -1,13 +1,40 @@
+from typing import Optional
 from heapq import heappop, heappush
 from flask import Blueprint
 import posix_ipc
-from models import db, Order, Position, Match, User, get_time, ORDER_BUY, Stonk, safe_get_or_create
-from utils import open_message_queue
+from models import db, Order, Position, Match, User, get_time, ORDER_BUY, Stonk, safe_get_or_create, Notification
+from utils import open_message_queue, format_money, ticker_format
 
 buys: dict[int, list[Order]] = {} # bids
 sells: dict[int, list[Order]] = {} # asks
 
 handled_orders: set[int] = set()
+
+REASON_MAPPING = {
+    Order.CANCEL_REASONS.INSUFFICIENT_BALANCE: "not enough balance",
+    Order.CANCEL_REASONS.INSUFFICIENT_POSITION: "not enough stonks held",
+}
+def send_notif(order: Order, match: Optional[Match]) -> None:
+    if match is None:
+        title = "Order Failed"
+        text = f"Failed to execute {'buy' if order.type==ORDER_BUY else 'sell'} order for {ticker_format(order.stonk_id)} because of: {REASON_MAPPING[order.cancelled_reason]}"
+        color = "danger"
+    else:
+        if order.quantity!=0:
+            title = "Order Partially Filled"
+        else:
+            title = "Order Filled"
+
+        text = f"Successfully {'bought' if order.type==ORDER_BUY else 'sold'} {match.quantity} shares of {ticker_format(match.stonk_id)} at ${format_money(match.price)}."
+        color = "success"
+
+    Notification.create(
+        user_id = order.user_id,
+        title = title,
+        text = text,
+        color = color,
+        created_time = get_time()
+    )
 
 def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order, bool]:
     # For now, assume that only one orderbook is running at a time
@@ -49,6 +76,7 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
             sell.cancelled_time = get_time()
             sell.cancelled_reason = Order.CANCEL_REASONS.INSUFFICIENT_POSITION
             sell.save()
+            send_notif(sell, None)
             return buy, sell, False
 
         if buy_user.balance < spent:
@@ -56,6 +84,7 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
             buy.cancelled_time = get_time()
             buy.cancelled_reason = Order.CANCEL_REASONS.INSUFFICIENT_BALANCE
             buy.save()
+            send_notif(buy, None)
             return buy, sell, False
 
         User.update(balance=User.balance-spent).where(User.id==buy.user_id).execute()
@@ -74,6 +103,8 @@ def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order,
 
         match.save()
 
+        send_notif(buy, match)
+        send_notif(sell, match)
         return buy, sell, True
 
 def process_order(order: Order) -> None:
