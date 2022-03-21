@@ -29,4 +29,13 @@ This is not complete, its more for me to rememeber stuff.
 4. add certs with `host.pem` and `host-key.pem`
 3. run `docker-compose up mariadb` and close once db created
 5. run admin commands with `docker-compose run orderbook flask admin`
-6. run `docker-compose up`
+6. run `docker-compose up` (optionally with `-d`)
+
+To get shell on running container its `docker-compose exec nginx sh`
+
+To connect to db, either connect to mariadb container with `bash`
+or use port 3001 exposed externally.
+
+
+
+curl https://localhost/nginx_status -k -H "Host: hmse.cash"
