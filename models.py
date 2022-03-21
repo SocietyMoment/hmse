@@ -7,15 +7,11 @@ import uuid
 from flask import Blueprint
 import peewee as pw
 from playhouse.pool import PooledMySQLDatabase
-from gevent import monkey
 from utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, ticker_format
 
 models_bp = Blueprint('models', __name__)
 
 #TODO: turn on caching
-if os.environ.get("FLASK_ENV")!="development":
-    monkey.patch_all()
-
 db = PooledMySQLDatabase(
     DB_NAME,
     user=DB_USER,
