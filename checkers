@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
 
-pytype *.py
+pytype *.py --exclude add_field.py
 pylint *.py
 echo "done checking"

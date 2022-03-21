@@ -130,6 +130,7 @@
             type: 'POST',
             dataType: "json",
             success: function(result) {
+                alert("successfully cancelled order");
                 document.location.reload();
             },
             error: (function(e, result) {

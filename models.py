@@ -8,7 +8,7 @@ from flask import Blueprint
 import peewee as pw
 from playhouse.pool import PooledMySQLDatabase
 from gevent import monkey
-from utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST
+from utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, ticker_format
 
 models_bp = Blueprint('models', __name__)
 
@@ -57,7 +57,7 @@ class User(BaseModel):
 
     username = pw.CharField(null=False) # again, from rdrama
     # idk what's the best way to sync this, maybe reload button
-    profile_pic_url = pw.CharField() # again, from rdrama
+    profile_pic_url = pw.CharField(null=True) # again, from rdrama
 
     balance = pw.IntegerField(null=False) # in cents, like all money
     created_time = pw.BigIntegerField(null=False)
@@ -100,16 +100,22 @@ class User(BaseModel):
             Position.user_id==self.id
         ).scalar() or 0) + self.balance
 
+    # TODO: cache these things to avoid if statement
+    def get_unread_notifs(self) -> Iterator['Notification']:
+        return Notification.select().where(
+            Notification.user_id==self.id,
+            ~Notification.read
+        ).order_by(Notification.created_time.desc())
+
 class LoginSession(BaseModel):
     id = pw.BinaryUUIDField(primary_key=True, default=create_uuid)
     user = pw.ForeignKeyField(User, backref='sessions', null=False, lazy_load=True)
     drama_access_token = pw.CharField(null=False)
 
-CHRLOOKUP = [""]+list(map(chr, range(65, 91)))
 class Stonk(BaseModel):
     id = pw.IntegerField(primary_key=True)
     name = pw.CharField(null=False)
-    description = pw.TextField()
+    description = pw.TextField(null=True)
 
     latest_price = pw.IntegerField(null=False)
 
@@ -117,12 +123,7 @@ class Stonk(BaseModel):
     # this gives it as a string
     # allows for up to 6 letter tickers
     def ticker(self) -> str:
-        ret = ""
-        val = self.id
-        for _ in range(6):
-            ret += CHRLOOKUP[val%27]
-            val //= 27
-        return ret
+        return ticker_format(self.id)
 
     @staticmethod
     def convert_ticker(ticker: str) -> int:
@@ -184,8 +185,8 @@ class Order(BaseModel):
         UNKOWN_REASON = 4
 
     cancelled = pw.BooleanField(null=False)
-    cancelled_time = pw.BigIntegerField()
-    cancelled_reason = pw.IntegerField()
+    cancelled_time = pw.BigIntegerField(null=True)
+    cancelled_reason = pw.IntegerField(null=True)
 
     # These comparators are for order book only
     def __eq__(self, other):
@@ -211,4 +212,16 @@ class Match(BaseModel):
 
     happened_time = pw.BigIntegerField(null=False)
 
+class Notification(BaseModel):
+    id = pw.BinaryUUIDField(primary_key=True, default=create_uuid)
+
+    user = pw.ForeignKeyField(User, backref='notifs', null=False, lazy_load=True)
+
+    title = pw.CharField(null=False)
+    text = pw.CharField(null=False)
+    link = pw.CharField(null=True)
+    color = pw.CharField(null=True)
+
+    read = pw.BooleanField(null=False, default=False)
+    created_time = pw.BigIntegerField(null=False)
 
