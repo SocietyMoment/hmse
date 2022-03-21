@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 style="margin-top: 50px; margin-bottom: 30px;">Notifications</h2>
+    {% for notif in notifs %}
+        <div class="card {{ ('border-'+notif.color) if notif.color else ''}}" style="margin-bottom: 30px;">
+            <div class="card-body">
+                <h5 class="card-title {{ ('text-'+notif.color) if notif.color else ''}}">
+                    {{ notif.title }}
+                    <span style="display:inline; float:right" class="text-muted">{{ notif.created_time | format_datetime }}</span>
+                </h5>
+                <p class="card-text">{{ notif.text }}</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

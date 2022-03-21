@@ -5,7 +5,7 @@ from auth import auth_bp, login_required
 from orderbook import orderbook_bp
 from admin import admin_bp
 from stonks import stonks_bp
-from money import money_bp
+from user import user_bp
 from text_pages import text_bp
 from utils import utils_bp
 
@@ -15,7 +15,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(orderbook_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(stonks_bp)
-app.register_blueprint(money_bp)
+app.register_blueprint(user_bp)
 app.register_blueprint(models_bp)
 app.register_blueprint(utils_bp)
 app.register_blueprint(text_bp)
