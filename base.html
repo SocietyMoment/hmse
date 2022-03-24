@@ -198,7 +198,8 @@
 <script>
     for (let e of $("span.timestamp-format")) {
         let ts = parseInt(e.dataset.timestamp);
-        e.innerHTML = (new Date(ts/1000)).toLocaleString();
+        e.innerHTML = (new Date(ts/1000)).toLocaleString(undefined, {day:"numeric", month:"numeric", hour:"numeric", minute:"2-digit"});
+        //e.innerHTML = (new Date(ts/1000)).toLocaleString();
     }
 
     let all_stonks_list = [
