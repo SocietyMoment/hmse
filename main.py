@@ -1,7 +1,4 @@
 import os
-from gevent import monkey
-if os.environ.get("FLASK_ENV")!="development":
-    monkey.patch_all()
 from flask import Flask, render_template, request, Blueprint
 from models import db, models_bp, Position, Stonk
 from auth import auth_bp, login_required
