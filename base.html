@@ -73,9 +73,8 @@
         <li class="nav-item" style="line-height:2em; margin-right:10px;">
             <a href="/notifications" class="nav-link">
                 <span class="oi oi-bell" title="notifications"></span>
-                {% set _notifs = user.get_unread_notifs() %}
-                {% if _notifs %}
-                    <span class="badge badge-pill badge-danger">{{ _notifs | length }}</span>
+                {% if user.get_unread_notifs() %}
+                    <span class="badge badge-pill badge-danger">{{ user.get_unread_notifs() | length }}</span>
                 {% endif %}
             </a>
         </li>
@@ -114,7 +113,10 @@
                 <strong><a class="nav-link" href="/stonks">All Stonks</a></strong>
             </li>
 
-            {{ notification_bell() }}
+            <span class="d-none d-lg-inline">
+                {{ notification_bell() }}
+            </span>
+
             {% if user %}
 
                 <li class="nav-item dropdown d-none d-lg-inline">

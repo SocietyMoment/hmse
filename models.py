@@ -1,8 +1,9 @@
 import time
+import functools
 import os
 from typing import TypeVar, Type, Iterator, Optional
 import enum
-import functools
+import methodtools
 import uuid
 from flask import Blueprint
 import peewee as pw
@@ -58,6 +59,7 @@ class User(BaseModel):
     balance = pw.IntegerField(null=False) # in cents, like all money
     created_time = pw.BigIntegerField(null=False)
 
+    @methodtools.lru_cache(maxsize=None)
     def get_position(self, stonk_id: int) -> Optional['Position']:
         return Position.select().where(
             Position.user_id==self.id,
@@ -65,6 +67,7 @@ class User(BaseModel):
             Position.stonk_id==stonk_id,
         ).first()
 
+    @methodtools.lru_cache(maxsize=None)
     def open_orders(self, stonk_id: int) -> Iterator['Order']:
         return Order.select().where(
             Order.user_id==self.id,
@@ -73,6 +76,7 @@ class User(BaseModel):
             Order.quantity!=0
         )
 
+    @methodtools.lru_cache(maxsize=None)
     def match_history(self, stonk_id: int) -> Iterator['Match']:
         return Match.select(
             Match,
@@ -88,6 +92,7 @@ class User(BaseModel):
             Order.stonk_id==stonk_id
         ).order_by(Match.happened_time.desc())
 
+    @methodtools.lru_cache(maxsize=None)
     def equity(self) -> int:
         return (Position.select(
             pw.fn.SUM(Position.quantity*Stonk.latest_price),
@@ -96,7 +101,7 @@ class User(BaseModel):
             Position.user_id==self.id
         ).scalar() or 0) + self.balance
 
-    # TODO: cache these things to avoid if statement
+    @methodtools.lru_cache(maxsize=None)
     def get_unread_notifs(self) -> Iterator['Notification']:
         return Notification.select().where(
             Notification.user_id==self.id,
