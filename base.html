@@ -24,7 +24,7 @@
 
 <style>
     .nav-item {
-        padding-left: 20px;
+        padding-right: 20px;
     }
 
     .stonk-search-item:active,
@@ -70,7 +70,7 @@
 
 {% macro notification_bell() %}
     {% if user %}
-        <li class="nav-item" style="line-height:2em; margin-right:10px;">
+        <li class="nav-item" style="line-height:2em;">
             <a href="/notifications" class="nav-link">
                 <span class="oi oi-bell" title="notifications"></span>
                 {% if user.get_unread_notifs() %}
@@ -84,6 +84,18 @@
 {% macro user_icon() %}
     <img src="{{ user.profile_pic_url }}" style="height: 2em; width: 2em; border-radius:100%;object-fit: cover;">
     <strong><span style="color:orange; ">{{ user.username }}</span></strong>
+{%- endmacro %}
+
+{% macro deposit_text() %}
+    <span class="oi oi-box" style="margin-right: 10px;"></span>Deposit Dramacoin
+{%- endmacro %}
+
+{% macro withdraw_text() %}
+    <span class="oi oi-dollar" style="margin-right: 10px;"></span>Withdraw Dramacoin
+{%- endmacro %}
+
+{% macro logout_text() %}
+    <span class="oi oi-account-logout" style="margin-right: 10px;"></span>Logout
 {%- endmacro %}
 
 <!--<nav class='navbar navbar-expand-lg navbar-light' style="background-color: #f14a24;">-->
@@ -119,26 +131,26 @@
 
             {% if user %}
 
-                <li class="nav-item dropdown d-none d-lg-inline">
+                <li class="nav-item dropdown d-none d-lg-inline" style="padding-right:0;">
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                         {{ user_icon() }}
                     </a>
                     <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" href="/deposit">Deposit Dramacoin</a>
-                        <a class="dropdown-item" href="/withdraw">Withdraw Dramacoin</a>
+                        <a class="dropdown-item" href="/deposit">{{ deposit_text() }}</a>
+                        <a class="dropdown-item" href="/withdraw">{{ withdraw_text() }}</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/logout">Logout</a>
+                        <a class="dropdown-item" href="/logout">{{ logout_text() }}</a>
                     </div>
                 </li>
 
                 <li class="nav-item d-lg-none">
-                    <a class="nav-link" href="/deposit"><strong>Deposit Dramacoin</strong></a>
+                    <a class="nav-link" href="/deposit"><strong>{{ deposit_text() }}</strong></a>
                 </li>
                 <li class="nav-item d-lg-none">
-                    <a class="nav-link" href="/withdraw"><strong>Withdraw Dramacoin</strong></a>
+                    <a class="nav-link" href="/withdraw"><strong>{{ withdraw_text() }}</strong></a>
                 </li>
                 <li class="nav-item d-lg-none">
-                    <a class="nav-link" href="/logout"><strong>Logout</strong></a>
+                    <a class="nav-link" href="/logout"><strong>{{ logout_text() }}</strong></a>
                 </li>
 
             {% else %}
