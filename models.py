@@ -1,10 +1,10 @@
 import time
 import functools
-import os
+import collections
 from typing import TypeVar, Type, Iterator, Optional
 import enum
-import methodtools
 import uuid
+import methodtools
 from flask import Blueprint
 import peewee as pw
 from playhouse.pool import PooledMySQLDatabase
@@ -68,6 +68,41 @@ class User(BaseModel):
         ).first()
 
     @methodtools.lru_cache(maxsize=None)
+    def get_position_with_pl(self, stonk_id: int) -> Optional['Position']:
+        """ Does cost basis calculation for profit/loss. FIFO selection"""
+        pos = self.get_position(stonk_id)
+        if pos is None: return None
+
+        matches = self.match_history(stonk_id)[::-1]
+        ids = collections.Counter([i.id for i in matches])
+        owned = collections.deque()
+        for match in matches:
+            if ids[match.id]>1: continue
+
+            if match.buy:
+                owned.appendleft([match.price, match.quantity])
+            else:
+                quantity = match.quantity
+                while quantity:
+                    # this shouldn't happen, but i don't wanna risk it
+                    # in case some manual weirdness happens
+                    if not owned:
+                        owned.append([0, quantity])
+
+                    cur = min(quantity, owned[-1][1])
+                    quantity -= cur
+                    owned[-1][1] -= cur
+                    if owned[-1][1]==0:
+                        owned.pop()
+
+        tot_cost = 0
+        for trans in owned:
+            tot_cost += trans[0]*trans[1]
+        pos.tot_cost = tot_cost
+
+        return pos
+
+    @methodtools.lru_cache(maxsize=None)
     def open_orders(self, stonk_id: int) -> Iterator['Order']:
         return Order.select().where(
             Order.user_id==self.id,
@@ -77,8 +112,8 @@ class User(BaseModel):
         )
 
     @methodtools.lru_cache(maxsize=None)
-    def match_history(self, stonk_id: int) -> Iterator['Match']:
-        return Match.select(
+    def match_history(self, stonk_id: int) -> list['Match']:
+        return list(Match.select(
             Match,
             Order.id,
             Order.user_id,
@@ -90,7 +125,7 @@ class User(BaseModel):
         ).where(
             Order.user_id==self.id,
             Order.stonk_id==stonk_id
-        ).order_by(Match.happened_time.desc())
+        ).order_by(Match.happened_time.desc()))
 
     @methodtools.lru_cache(maxsize=None)
     def equity(self) -> int:
@@ -135,6 +170,16 @@ class Stonk(BaseModel):
             power *= 27
         return ret
 
+    def latest_trades(self, limit: int=5) -> Iterator['Match']:
+        return Match.select(
+            Match.price,
+            Match.quantity,
+            Match.happened_time,
+        ).where(
+            Match.stonk_id==self.id,
+            Match.seller_order_id!=None # pylint: disable=singleton-comparison
+        ).order_by(Match.happened_time.desc()).limit(limit)
+
     # def get_latest_price(self) -> int:
     #     return (Match.
     #         select(Match.price, Match.happened_time).
@@ -156,8 +201,6 @@ class Position(BaseModel):
 
 ORDER_BUY = True
 ORDER_SELL = False
-models_bp.add_app_template_global(ORDER_BUY, "ORDER_BUY")
-models_bp.add_app_template_global(ORDER_SELL, "ORDER_SELL")
 
 @functools.total_ordering
 class Order(BaseModel):
@@ -183,7 +226,8 @@ class Order(BaseModel):
         USER_REQUEST = 1
         INSUFFICIENT_BALANCE = 2
         INSUFFICIENT_POSITION = 3
-        UNKOWN_REASON = 4
+        GIFT_RECV_ORDER = 4
+        UNKOWN_REASON = 100
 
     cancelled = pw.BooleanField(null=False)
     cancelled_time = pw.BigIntegerField(null=True)
@@ -198,12 +242,16 @@ class Order(BaseModel):
             return self.price<other.price or (self.price==other.price and self.created_time<other.created_time)
         return self.price>other.price or (self.price==other.price and self.created_time<other.created_time)
 
+models_bp.add_app_template_global(ORDER_BUY, "ORDER_BUY")
+models_bp.add_app_template_global(ORDER_SELL, "ORDER_SELL")
+models_bp.add_app_template_global(Order.CANCEL_REASONS, "CANCEL_REASONS")
+
 class Match(BaseModel):
     """A transaction that happened"""
 
     id = pw.AutoField()
 
-    seller_order = pw.ForeignKeyField(Order, backref='matches', null=False, lazy_load=True)
+    seller_order = pw.ForeignKeyField(Order, backref='matches', null=True, lazy_load=True)
     buyer_order = pw.ForeignKeyField(Order, backref='matches', null=False, lazy_load=True)
 
     stonk = pw.ForeignKeyField(Stonk, null=False, lazy_load=True)

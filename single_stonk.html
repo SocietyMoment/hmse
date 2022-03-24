@@ -42,24 +42,37 @@
                 {% endif %}
             </a>
             {% if user %}
-                {% set cur_pos = user.get_position(stonk.id) %}
+                {% set cur_pos = user.get_position_with_pl(stonk.id) %}
                 {% if cur_pos %}
                     <h2 style="padding-top: 30px;">Current Position:</h2> 
-                    <div class="card" style="margin-top: 20px;">
+
+                    {% set value = cur_pos.quantity*stonk.latest_price %}
+                    {% set tot_return = value - cur_pos.tot_cost %}
+                    {% set color = "success" if tot_return >= 0 else "danger" %}
+
+                    <div class="card border-{{ color }}" style="margin-top: 20px;">
                         <div class="card-body">
-                            <span class="lead">{{ cur_pos.quantity }} shares</span>
-                            <span class="lead" style="float:right;">
-                                Value:
-                                ${{ (cur_pos.quantity*stonk.latest_price) | format_money }}
-                            </span>
+                            <div>
+                                <span class="lead">{{ cur_pos.quantity }} shares</span>
+                                <span class="lead" style="float:right;">
+                                    Value:
+                                    ${{ value | format_money }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="lead">Avg Cost: ${{ (cur_pos.tot_cost / cur_pos.quantity) | format_money}}</span>
+                                <span class="lead text-{{ color }}" style="float:right;">
+                                    {{ '-' if tot_return<0 else '+' }}${{ tot_return | abs | format_money }}
+                                    ({{ "{:+,.2f}".format(tot_return / cur_pos.tot_cost * 100).rstrip('0').rstrip('.') if cur_pos.tot_cost else 'inf' }}%)
+                                </span>
+                            </div>
                         </div>
                     </div>
                 {% endif %}
                 
-                {% set open_orders = user.open_orders(stonk.id) %}
-                {% if open_orders %}
+                {% if user.open_orders(stonk.id) %}
                     <h2 style="padding-top: 30px;">Open Orders:</h2> 
-                    {% for order in open_orders %}
+                    {% for order in user.open_orders(stonk.id) %}
                         <div class="card" style="margin-top: 20px;">
                             <div class="card-header">
                                 <h4 style="margin-bottom:0; display:inline-block;">
@@ -84,18 +97,23 @@
                     {% endfor %}
                 {% endif %}
 
-                {% set match_history = user.match_history(stonk.id) %}
-                {% if match_history %}
+                {% if user.match_history(stonk.id) %}
                     <h2 style="padding-top: 30px;" data-toggle="collapse" data-target=".history-collapse">History:
                         <span style="vertical-align:middle; float:right; transition: none;" class="collapse history-collapse show text-muted oi oi-chevron-right"></span>
                         <span style="vertical-align:middle; float:right; transition: none;" class="collapse history-collapse text-muted oi oi-chevron-bottom"></span>
                     </h2> 
                     <div class="collapse history-collapse">
-                        {% for match in match_history %}
+                        {% for match in user.match_history(stonk.id) %}
                             <div class="card" style="margin-top: 20px;">
                                 <div class="card-header">
                                     <h4 style="margin-bottom:0; display:inline-block;">
-                                        {{ "Bought" if match.buy else "Sold" }}
+                                        {% if not match.buy %}
+                                            Sold
+                                        {% elif match.seller_order_id==None %}
+                                            Given
+                                        {% else %}
+                                            Bought
+                                        {% endif %}
                                     </h4>
                                     <span style="float:right;">
                                         {{ match.happened_time | format_datetime }}

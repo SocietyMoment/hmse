@@ -1,7 +1,7 @@
 import shutil
 from flask import Blueprint
 import click
-from models import db, Stonk, BaseModel, Position, User, safe_get_or_create
+from models import db, Stonk, BaseModel, Order, Match, Position, User, safe_get_or_create, ORDER_BUY, get_time
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -71,12 +71,32 @@ def give_stonk(ticker, userid, quantity):
     click.echo("")
     click.confirm('Do you want to continue?', abort=True)
 
+    fake_order = Order.create(
+        user_id=user.id,
+        type = ORDER_BUY,
+        price = 0,
+        quantity = 0,
+        original_quantity = quantity,
+        stonk_id = stonk.id,
+        created_time = get_time(),
+        cancelled = True,
+        cancelled_reason = Order.CANCEL_REASONS.GIFT_RECV_ORDER,
+    )
+
+    Match.create(
+        seller_order = None,
+        buyer_order = fake_order,
+        stonk_id = stonk.id,
+        price = 0,
+        quantity = quantity,
+        happened_time = get_time(),
+    )
+
     position, _ = safe_get_or_create(Position,
         user_id = user.id,
         stonk_id = stonk.id,
         defaults = {"quantity": 0}
     )
-
 
     succ = Position.update(quantity = Position.quantity+quantity).where(Position.id==position.id).execute()
 
