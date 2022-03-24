@@ -11,6 +11,8 @@ from utils import utils_bp
 
 app = Flask(__name__, template_folder='.')
 
+app.url_map.strict_slashes = False
+
 app.register_blueprint(auth_bp)
 app.register_blueprint(orderbook_bp)
 app.register_blueprint(admin_bp)
@@ -19,8 +21,6 @@ app.register_blueprint(user_bp)
 app.register_blueprint(models_bp)
 app.register_blueprint(utils_bp)
 app.register_blueprint(text_bp)
-
-app.url_map.strict_slashes = False
 
 if os.environ.get("FLASK_ENV")=="development":
     app.register_blueprint(Blueprint('images', __name__, static_folder='img'))
