@@ -7,19 +7,18 @@
     <h3 class="text-muted" style="margin-top: 40px;">Dashboard</h3>
     <hr>
     <div class="row" style="margin-top: 30px;">
-        <div class="col-9">
+        <div class="col-md-9">
             <h1 class="display-3">Equity: ${{ user.equity() | format_money }}</h1>
         </div>
-        <div class="col-3">
-            <h2 style="text-align:right;">Cash: ${{ user.balance | format_money }}</h2>
+        <div class="col-md-3">
+            <h2 class="text-left text-md-right">Cash: ${{ user.balance | format_money }}</h2>
         </div>
     </div>
 
     {% if positions %}
         <h2 style="margin-top: 50px;">Open Positions:</h2>
         {% for position in positions %}
-            <div class="card" style="width: 25rem; display: inline-block;
-                margin: 50px;">
+            <div class="card my-5 mx-md-2 mx-lg-5" style="width: 20rem; max-width: calc(100vw - 30px); display: inline-block;">
                 <div class="card-header">
                     <h4 style="margin-bottom:0; display:inline-block;">
                         <img src="/img/stonk-icons/icon_{{ position.stonk_id }}"

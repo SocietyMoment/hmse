@@ -29,7 +29,7 @@
                 <th>Ticker</th>
                 <th>Name</th>
                 <th>Price</th>
-                <th></th>
+                <th class="d-none d-md-table-cell"></th>
             </tr>
         </thead>
         <tbody>
@@ -50,7 +50,7 @@
                         <a href="{{surl}}" class="row-link"></a>
                         <div style="margin-top: .5em;">${{ stonk.latest_price | format_money }}</div>
                     </td>
-                    <td>
+                    <td class="d-none d-md-table-cell">
                         <a class="btn btn-primary stretched-link" href="{{surl}}">View</a>
                     </td>
                 </tr>

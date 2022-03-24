@@ -15,21 +15,27 @@
 
 {% block content %}
 <div class="container">
-    <div class="row" style="margin-top: 25px;">
-        <div class="col-3" style="padding-top: 30px; padding-right: 60px;">
-            <img style="width:100%; height:auto;" src="/img/stonk-icons/icon_{{ stonk.id }}">
+    <div class="row no-gutters" style="margin-top: 25px;">
+        <div class="col-3 col-md-2" style="padding-top: 30px;">
+            <img style="width:100%; height:auto; padding-top: 15px; padding-right: 10px;" src="/img/stonk-icons/icon_{{ stonk.id }}">
         </div>
-        <div class="col-4" style="padding-top: 30px;">
+        <div class="col-9 col-md-5" style="padding-top: 30px;">
             <h1 class="display-3"><strong>{{ stonk.ticker() }}</strong></h1>
             <h2 class="text-muted" style="margin-left: 8px;">{{ stonk.name }}</h2>
         </div>
-        <div class="col-2"></div>
-        <div class="col-3" style="padding-top: 30px; text-align:right;">
+        <div class="col-md-5 text-left text-md-right ml-5 ml-md-0" style="padding-top: 30px;">
             <h2 class="display-3">${{ stonk.latest_price | format_money }}</h2>
         </div>
     </div>
-    <div class="row" style="margin-top: 50px;">
-        <div class="col-9">
+    <div class="row">
+        <div class="col-md-3 mt-md-5 mt-4">
+            <div style="text-align: center;">
+                <a href="/stonks/{{ stonk.ticker() }}/orderbook" class="lead text-info">View Orderbook</a>
+            </div>
+            <hr>
+            <div class="d-none d-md-block" style="margin-top: -5px; font-size: 16pt; white-space: pre-wrap;">{{ stonk.description }}</div>
+        </div>
+        <div class="col-md-9 mt-md-5">
             <a class="btn btn-primary btn-lg" style="width:100%;"
                 {% if user %}href="/trade?id={{ stonk.id }}">Trade {{ stonk.ticker() }}
                 {% else %}href="/trade?id={{ stonk.id }}">Login to Trade {{ stonk.ticker() }}
@@ -80,28 +86,33 @@
 
                 {% set match_history = user.match_history(stonk.id) %}
                 {% if match_history %}
-                    <h2 style="padding-top: 30px;">History:</h2> 
-                    {% for match in match_history %}
-                        <div class="card" style="margin-top: 20px;">
-                            <div class="card-header">
-                                <h4 style="margin-bottom:0; display:inline-block;">
-                                    {{ "Bought" if match.buy else "Sold" }}
-                                </h4>
-                                <span style="float:right;">
-                                    {{ match.happened_time | format_datetime }}
-                                </span>
+                    <h2 style="padding-top: 30px;" data-toggle="collapse" data-target=".history-collapse">History:
+                        <span style="vertical-align:middle; float:right; transition: none;" class="collapse history-collapse show text-muted oi oi-chevron-right"></span>
+                        <span style="vertical-align:middle; float:right; transition: none;" class="collapse history-collapse text-muted oi oi-chevron-bottom"></span>
+                    </h2> 
+                    <div class="collapse history-collapse">
+                        {% for match in match_history %}
+                            <div class="card" style="margin-top: 20px;">
+                                <div class="card-header">
+                                    <h4 style="margin-bottom:0; display:inline-block;">
+                                        {{ "Bought" if match.buy else "Sold" }}
+                                    </h4>
+                                    <span style="float:right;">
+                                        {{ match.happened_time | format_datetime }}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <span class="lead">
+                                        {{ match.quantity }} share{{ 's' if match.quantity!=1 else ''}}
+                                        @ ${{ match.price | format_money }}
+                                    </span>
+                                    <span style="float: right;" class="lead">
+                                        Total: ${{ (match.quantity*match.price) | format_money }}
+                                    </span>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <span class="lead">
-                                    {{ match.quantity }} share{{ 's' if match.quantity!=1 else ''}}
-                                    @ ${{ match.price | format_money }}
-                                </span>
-                                <span style="float: right;" class="lead">
-                                    Total: ${{ (match.quantity*match.price) | format_money }}
-                                </span>
-                            </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 {% endif %}
 
                 {#
@@ -110,13 +121,10 @@
                 {% endif %}
                 #}
             {% endif %}
-        </div>
-        <div class="col-3">
-            <div style="text-align: center;">
-                <a href="/stonks/{{ stonk.ticker() }}/orderbook" class="lead text-info">View Orderbook</a>
+            <div class="d-md-none">
+                <hr>
+                <div style="margin-top: -5px; font-size: 16pt; white-space: pre-wrap;">{{ stonk.description }}</div>
             </div>
-            <hr>
-            <div style="margin-top: -5px; font-size: 16pt; white-space: pre-wrap;">{{ stonk.description }}</div>
         </div>
     </div>
 </div>
