@@ -69,44 +69,51 @@
 {% endblock %}
 
 <!--<nav class='navbar navbar-expand-lg navbar-light' style="background-color: #f14a24;">-->
-<nav class='navbar navbar-expand-lg navbar-dark bg-dark' style="display:flex;">
-    <a class="navbar-brand" href="/"><img style="width:2.8em; height:2.8em; margin-right:15px;" src="/img/favicon.png">HMSE</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+{# navbar 3 from here: https://www.codeply.com/go/qhaBrcWp3v #}
+<nav class='navbar navbar-expand-md navbar-dark bg-dark' style="display:flex;">
+    <a class="navbar-brand d-flex w-50 mr-auto" href="/">
+        <img style="width:auto; height:2em ; margin-right:15px;" src="/img/favicon.png">
+        <span style="line-height:2em;">HMSE</span>
+    </a>
+
+    {# this is stuff that only shows up in small devices outside hmaburger #}
+    <ul class="nav navbar-nav d-md-none">
+        <li class="nav-item" style="line-height:2em;">
+            <a href="/notifications" class="nav-link">
+                <span class="oi oi-bell" title="notifications"></span>
+                {% set _notifs = user.get_unread_notifs() %}
+                {% if _notifs %}
+                    <span class="badge badge-pill badge-danger" style="margin-right:10px;">{{ _notifs | length }}</span>
+                {% endif %}
+            </a>
+        </li>
+    </ul>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavBar" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <form class="form-inline" id="stonk-search-form"
-            style="display: inline-block; flex-grow: 1; text-align:center;">
-            <div style="width: 40%; display:inline-block;" class="input-group">
-                <input class="form-control" type="search" id="stonk-search"
-                    placeholder="Search stonks by ticker... (shortcut /&#8201;)" aria-label="Search stonks by ticker (shortcut /)"
-                    data-toggle="dropdown" style="width: 100%; border-radius: 4px;"
-                    autocomplete="off">
-                <div class="dropdown-menu" aria-labelledby="stonk-search" 
-                    id="stonk-search-results" hidden style="width:100%;"></div>
-            </div>
-        </form>
-
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
+    <div class="navbar-collapse collapse w-100" id="mainNavBar">
+        <ul class="nav navbar-nav ml-auto w-100 justify-content-end">
+            <li class="nav-item" style="line-height:2em;">
                 <strong><a class="nav-link" href="/stonks">All Stonks</a></strong>
             </li>
 
             {% if user %}
-                <li class="nav-item">
+                <li class="nav-item d-none d-md-inline" style="line-height:2em;">
                     <a href="/notifications" class="nav-link">
                         <span class="oi oi-bell" title="notifications"></span>
                         {% set _notifs = user.get_unread_notifs() %}
                         {% if _notifs %}
-                            <span class="badge badge-pill badge-danger">{{ _notifs | length }}</span>
+                            <span class="badge badge-pill badge-danger" style="margin-right:10px;">{{ _notifs | length }}</span>
                         {% endif %}
                     </a>
                 </li>
-                <li class="nav-item dropdown">
+
+                <li class="nav-item dropdown d-none d-md-inline">
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                        <strong><span style="color:orange; padding-left: calc(2.5em + 10px);">{{ user.username }}</span></strong>
-                        <img src="{{ user.profile_pic_url }}" style="height: 2.8em; width:2.8em; border-radius:100%;object-fit: cover;display:inline; position:absolute; left:25px; bottom: -2px;">
+                        <img src="{{ user.profile_pic_url }}" style="height: 2em; width: 2em; border-radius:100%;object-fit: cover;display:inline;">
+                        <strong><span style="color:orange; ">{{ user.username }}</span></strong>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right">
                         <a class="dropdown-item" href="/deposit">Deposit Dramacoin</a>
@@ -115,13 +122,37 @@
                         <a class="dropdown-item" href="/logout">Logout</a>
                     </div>
                 </li>
+
+                <li class="nav-item d-md-none">
+                    <a class="nav-link" href="/deposit"><strong>Deposit Dramacoin</strong></a>
+                </li>
+                <li class="nav-item d-md-none">
+                    <a class="nav-link" href="/withdraw"><strong>Withdraw Dramacoin</strong></a>
+                </li>
+                <li class="nav-item d-md-none">
+                    <a class="nav-link" href="/logout"><strong>Logout</strong></a>
+                </li>
+
             {% else %}
                 <li class="nav-item">
                     <strong><a class="nav-link" href="/login">Login</a></strong>
                 </li>
             {% endif %}
         </ul>
+
+        <form class="form-inline w-100 order-lg-first" id="stonk-search-form"
+            style="display: inline-block;">
+            <div style="width: 100%; display:inline-block;" class="input-group">
+                <input class="form-control" type="search" id="stonk-search"
+                    placeholder="Search stonks by ticker... (shortcut /&#8201;)" aria-label="Search stonks by ticker (shortcut /)"
+                    data-toggle="dropdown" style="width: 100%; border-radius: 4px;"
+                    autocomplete="off">
+                <div class="dropdown-menu" aria-labelledby="stonk-search" 
+                    id="stonk-search-results" hidden style="width:100%;"></div>
+            </div>
+        </form>
     </div>
+
 </nav>
 
 {# message to display #}
