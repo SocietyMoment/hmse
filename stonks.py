@@ -102,6 +102,7 @@ def return_orderbook_view(user, ticker: int):
     if stonk is None:
         abort(404)
 
+    #TODO
     if "debug_valid" in request.args:
         orders = Order.select(
             Order.price,
