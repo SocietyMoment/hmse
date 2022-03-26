@@ -1,7 +1,7 @@
 import shutil
 from flask import Blueprint
 import click
-from models import db, Stonk, BaseModel, Order, Match, Position, User, safe_get_or_create, ORDER_BUY, get_time
+from models import db, Stonk, BaseModel, Order, Match, Position, User, safe_get_or_create, ORDER_BUY, get_time, Notification
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -102,4 +102,21 @@ def give_stonk(ticker, userid, quantity):
 
     assert succ!=0
     click.echo("success!")
+
+@admin_bp.cli.command("send-notification")
+@click.argument("userid", required=True, type=int)
+@click.argument("title", required=True)
+@click.argument("message", required=True)
+@click.option("-c", "--color")
+def give_stonk(userid, title, message, color):
+    user = User.get_or_none(User.id==userid)
+    if user is None:
+        raise click.BadOptionUsage("userid", "user doesn't exist")
+
+    Notification.create_and_send(
+        userid,
+        title,
+        message,
+        color,
+    )
 

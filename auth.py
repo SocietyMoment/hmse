@@ -1,5 +1,6 @@
 from typing import Union
 import uuid
+import json
 import urllib
 import functools
 from flask import redirect, Blueprint, make_response, request, abort, render_template
@@ -34,6 +35,7 @@ def get_user_from_drama(access_token) -> tuple[User, bool]:
         "profile_pic_url": resp["profile_url"],
         "balance": 0,
         "created_time": get_time(),
+        "show_push_notifications": True,
     })
 
 @auth_bp.route("/handle_login")
@@ -43,7 +45,11 @@ def handle_login():
         abort(401)
 
     user, new = get_user_from_drama(access_token)
-    session = LoginSession.create(user_id = user.id, drama_access_token=access_token)
+    session = LoginSession.create(
+        user_id = user.id,
+        drama_access_token=access_token,
+        created_time = get_time(),
+    )
 
     redirect_url = request.cookies.get("redirect_url") or '/'
     #TODO: welcome
@@ -51,7 +57,7 @@ def handle_login():
         redirect_url += '?welcome'
 
     resp = make_response(redirect(redirect_url))
-    resp.set_cookie('session_id', str(session.id))
+    resp.set_cookie('session_id', str(session.id), expires=2147483647)
     resp.set_cookie('redirect_url', '', expires=0)
     return resp
 
@@ -82,6 +88,18 @@ def login_required(fail=True):
 
         return func
     return inner_decorator
+
+@auth_bp.route("/subscribe_notifications", methods=["POST"])
+@login_required()
+def subscribe_notifications(user):
+    sub = request.json
+
+    session_id = uuid.UUID(request.cookies["session_id"])
+    LoginSession.update(
+        notification_subscription = json.dumps(sub)
+    ).where(LoginSession.id == session_id).execute()
+
+    return {'success':True}, 200
 
 @auth_bp.route("/logout")
 @login_required()

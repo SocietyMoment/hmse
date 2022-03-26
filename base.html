@@ -94,6 +94,10 @@
     <span class="oi oi-dollar" style="margin-right: 10px;"></span>Withdraw Dramacoin
 {%- endmacro %}
 
+{% macro settings_text() %}
+    <span class="oi oi-cog" style="margin-right: 10px;"></span>Settings
+{%- endmacro %}
+
 {% macro logout_text() %}
     <span class="oi oi-account-logout" style="margin-right: 10px;"></span>Logout
 {%- endmacro %}
@@ -138,6 +142,7 @@
                     <div class="dropdown-menu dropdown-menu-right">
                         <a class="dropdown-item" href="/deposit">{{ deposit_text() }}</a>
                         <a class="dropdown-item" href="/withdraw">{{ withdraw_text() }}</a>
+                        <a class="dropdown-item" href="/settings">{{ settings_text() }}</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/logout">{{ logout_text() }}</a>
                     </div>
@@ -148,6 +153,9 @@
                 </li>
                 <li class="nav-item d-lg-none">
                     <a class="nav-link" href="/withdraw"><strong>{{ withdraw_text() }}</strong></a>
+                </li>
+                <li class="nav-item d-lg-none">
+                    <a class="nav-link" href="/settings"><strong>{{ settings_text() }}</strong></a>
                 </li>
                 <li class="nav-item d-lg-none">
                     <a class="nav-link" href="/logout"><strong>{{ logout_text() }}</strong></a>
@@ -196,12 +204,6 @@
 #}
 
 <script>
-    for (let e of $("span.timestamp-format")) {
-        let ts = parseInt(e.dataset.timestamp);
-        e.innerHTML = (new Date(ts/1000)).toLocaleString(undefined, {day:"numeric", month:"numeric", hour:"numeric", minute:"2-digit"});
-        //e.innerHTML = (new Date(ts/1000)).toLocaleString();
-    }
-
     let all_stonks_list = [
         {% for s in all_stonks %}
             {
@@ -212,42 +214,15 @@
         {% endfor %}
     ];
 
-    $("#stonk-search").on('input', (e)=>{
-        let text = e.currentTarget.value.toUpperCase();
-        if (text.length>=1) {
-            matches = all_stonks_list.filter(s => (s.name.toUpperCase().includes(text) || s.ticker.startsWith(text)));
-            let dropdown="";
-            for (let s of matches) {
-                dropdown += `
-                    <a onclick="document.location.href=this.href;"
-                        class="dropdown-item stonk-search-item" href="/stonks/${s.ticker}">
-                        <img src="/img/stonk-icons/icon_${s.id}" class="lead" style="height: 1em; width:auto;">
-                        <span style="position: relative; top:0.16em;" class="lead">${s.ticker}</span>
-                        <span style="float:right; position: relative; top:.3em;" class="text-muted">${s.name}</span>
-                    </a>
-                `;
-            }
-            $("#stonk-search-results").html(dropdown)
-                .prop("hidden", false)
-                .dropdown('show');
-        } else {
-            $("#stonk-search-results")
-                .prop("hidden", true)
-                .dropdown('hide');
-        }
-    });
+    const VAPID_PUBLIC_KEY = {{ VAPID_PUBLIC_KEY | tojson }};
+</script>
 
-    $("#stonk-search-form").on('submit', (e)=>{
-        e.preventDefault();
-        document.location.href = $("#stonk-search-results")[0].firstElementChild.href;
-        return false;
-    });
+<script src="/js/base.js"></script>
 
-    $(window).keyup((e)=>{
-        if (e.which===191 && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
-            e.preventDefault();
-            $("#stonk-search").click();
-            return false;
-        }
-    });
+<script>
+    {% if user %}
+        set_up_notifications();
+    {% else %}
+        remove_notifications();
+    {% endif %}
 </script>

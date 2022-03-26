@@ -28,12 +28,11 @@ def send_notif(order: Order, match: Optional[Match]) -> None:
         text = f"Successfully {'bought' if order.type==ORDER_BUY else 'sold'} {match.quantity} shares of {ticker_format(match.stonk_id)} at ${format_money(match.price)}."
         color = "success"
 
-    Notification.create(
+    Notification.create_and_send(
         user_id = order.user_id,
         title = title,
         text = text,
         color = color,
-        created_time = get_time()
     )
 
 def execute_order(buy: Order, sell: Order, stonk_id: int) -> tuple[Order, Order, bool]:
