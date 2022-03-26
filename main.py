@@ -24,6 +24,14 @@ app.register_blueprint(text_bp)
 
 if os.environ.get("FLASK_ENV")=="development":
     app.register_blueprint(Blueprint('images', __name__, static_folder='img'))
+    
+    js_bp = Blueprint('js', __name__, static_folder='js')
+    @js_bp.after_request
+    def attach_sw(resp):
+        resp.headers["Service-Worker-Allowed"] = "/"
+        return resp
+    app.register_blueprint(js_bp)
+
     app.debug = True
 
 @app.before_request
