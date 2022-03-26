@@ -5,4 +5,5 @@ methodtools==0.4.5
 peewee==3.14.10
 posix-ipc==1.0.5
 PyMySQL==1.0.2
+pywebpush==1.14.0
 requests==2.27.1
