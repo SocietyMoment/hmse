@@ -53,8 +53,8 @@ def handle_login():
 
     redirect_url = request.cookies.get("redirect_url") or '/'
     #TODO: welcome
-    if new:
-        redirect_url += '?welcome'
+    # if new:
+    #    redirect_url += '?welcome'
 
     resp = make_response(redirect(redirect_url))
     resp.set_cookie('session_id', str(session.id), expires=2147483647)
