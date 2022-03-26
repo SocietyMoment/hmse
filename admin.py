@@ -108,7 +108,7 @@ def give_stonk(ticker, userid, quantity):
 @click.argument("title", required=True)
 @click.argument("message", required=True)
 @click.option("-c", "--color")
-def give_stonk(userid, title, message, color):
+def send_notif(userid, title, message, color):
     user = User.get_or_none(User.id==userid)
     if user is None:
         raise click.BadOptionUsage("userid", "user doesn't exist")
