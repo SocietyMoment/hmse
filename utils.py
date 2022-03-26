@@ -23,7 +23,7 @@ VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY")
 utils_bp.add_app_template_global(VAPID_PUBLIC_KEY, "VAPID_PUBLIC_KEY")
 
 def open_message_queue(read: bool, write: bool) -> posix_ipc.MessageQueue:
-    return posix_ipc.MessageQueue(MESSAGE_QUEUE_NAME, posix_ipc.O_CREAT, max_messages=50, read=read, write=write)
+    return posix_ipc.MessageQueue(MESSAGE_QUEUE_NAME, posix_ipc.O_CREAT, max_messages=10, read=read, write=write)
 
 CHRLOOKUP = [""]+list(map(chr, range(65, 91)))
 def ticker_format(val: int) -> str:
