@@ -6,7 +6,7 @@
 <div class="container">
     <div class="row" style="margin-top: 50px;">
         <h2 class="col-8">
-            Trade {{ stonk.ticker() }}
+            <span id="trade-verb">Buy</span> {{ stonk.ticker() }}
             <span class="text-muted" style="white-space: nowrap;">(<img style="height:1em; width:auto; padding:0;margin:0;" src="/img/stonk-icons/icon_{{ stonk.id }}">
             <span style="position: relative; top: 3px;">{{ stonk.name }}</span>)</span>
         </h2>
@@ -22,14 +22,9 @@
         <h2>${{ stonk.latest_price | format_money }}</h2>
     </div>-->
     <form method="post">
-        <div class="custom-control custom-radio">
-            <input type="radio" id="buy_radio" value="buy" name="buy_sell" class="custom-control-input" required checked>
-            <label class="custom-control-label lead" for="buy_radio"><span style="position:relative;bottom:.2em;">Buy</span></label>
-        </div>
-        <div class="custom-control custom-radio">
-            <input type="radio" id="sell_radio" value="sell" name="buy_sell" class="custom-control-input" required>
-            <label class="custom-control-label lead" for="sell_radio"><span style="position:relative;bottom:.2em;">Sell</span></label>
-        </div>
+        <button class="btn btn-lg" type="button" id="buy-btn" style="width:100px; margin-right:20px;">Buy</button>
+        <button class="btn btn-lg" type="button" id="sell-btn" style="width:100px;">Sell</button>
+        <input type="hidden" name="buy_sell" id="buy_sell">
 
         <div class="form-group" style="margin-top: 30px;">
             <label for="quantity" class="lead">Quantity:</label>
@@ -45,4 +40,23 @@
 
     </form>
 </div>
+
+<script>
+    $("#buy-btn").click(()=>{
+        $("#buy-btn").removeClass("btn-outline-info").addClass("btn-info");
+        $("#sell-btn").addClass("btn-outline-info").removeClass("btn-info");
+        $("#buy_sell").val("buy");
+        $("#trade-verb").text("Buy");
+    });
+
+    $("#sell-btn").click(()=>{
+        $("#sell-btn").removeClass("btn-outline-info").addClass("btn-info");
+        $("#buy-btn").addClass("btn-outline-info").removeClass("btn-info");
+        $("#buy_sell").val("sell");
+        $("#trade-verb").text("Sell");
+    });
+
+    $("#buy-btn").click();
+</script>
+
 {% endblock %}
