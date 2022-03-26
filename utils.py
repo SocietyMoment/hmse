@@ -4,6 +4,8 @@ from flask import Blueprint
 from jinja2 import Markup
 import posix_ipc
 
+utils_bp = Blueprint('utils', __name__)
+
 MESSAGE_QUEUE_NAME = "/HMSE_orderqueue"
 
 DB_NAME = os.environ.get("MARIADB_DATABASE")
@@ -16,6 +18,10 @@ DRAMA_CLIENT_ID = os.environ.get("DRAMA_CLIENT_ID")
 DRAMA_HOLDING_ACCOUNT_USERNAME = os.environ.get("DRAMA_HOLDING_ACCOUNT_USERNAME")
 DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN = os.environ.get("DRAMA_HOLDING_ACCOUNT_ACCESS_TOKEN")
 
+VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY")
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY")
+utils_bp.add_app_template_global(VAPID_PUBLIC_KEY, "VAPID_PUBLIC_KEY")
+
 def open_message_queue(read: bool, write: bool) -> posix_ipc.MessageQueue:
     return posix_ipc.MessageQueue(MESSAGE_QUEUE_NAME, posix_ipc.O_CREAT, max_messages=50, read=read, write=write)
 
@@ -26,8 +32,6 @@ def ticker_format(val: int) -> str:
         ret += CHRLOOKUP[val%27]
         val //= 27
     return ret
-
-utils_bp = Blueprint('utils', __name__)
 
 def format_money(money: Optional[int]) -> str:
     if money is None: return ""
