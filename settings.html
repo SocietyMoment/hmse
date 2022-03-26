@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block header %}
+<style>
+.custom-control-label {
+  transform: scale(1.4);
+  transform-origin: top left;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 style="margin-top: 50px; margin-bottom: 30px;">Settings</h2>
+
+    <div class="custom-control custom-switch custom-switch-lg">
+        <input type="checkbox" class="custom-control-input" id="show_notifs_switch" name="show_notifs"
+            {% if user.show_push_notifications %}checked{% endif %}
+        >
+        <label class="custom-control-label" for="show_notifs_switch" style="margin-left: 20px;">Show Push Notifications</label>
+    </div>
+</div>
+
+<script>
+    $("#show_notifs_switch").click((event) => {
+        event.preventDefault();
+        let new_val = !!$("#show_notifs_switch").prop('checked');
+
+        $.ajax("/update_settings", {
+            data : JSON.stringify({
+                show_notifications: new_val,
+            }),
+            contentType : 'application/json',
+            type : 'POST',
+            success: (e) => {
+                $("#show_notifs_switch").prop('checked', new_val);
+            },
+        });
+
+        return false;
+    });
+</script>
+{% endblock %}

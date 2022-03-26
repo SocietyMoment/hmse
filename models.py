@@ -1,4 +1,5 @@
 import time
+import json
 import functools
 import collections
 from typing import TypeVar, Type, Iterator, Optional
@@ -6,9 +7,10 @@ import enum
 import uuid
 import methodtools
 from flask import Blueprint
+from pywebpush import webpush
 import peewee as pw
 from playhouse.pool import PooledMySQLDatabase
-from utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, ticker_format
+from utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, ticker_format, VAPID_PRIVATE_KEY
 
 models_bp = Blueprint('models', __name__)
 
@@ -58,6 +60,8 @@ class User(BaseModel):
 
     balance = pw.IntegerField(null=False) # in cents, like all money
     created_time = pw.BigIntegerField(null=False)
+
+    show_push_notifications = pw.BooleanField(null=False)
 
     @methodtools.lru_cache(maxsize=None)
     def get_position(self, stonk_id: int) -> Optional['Position']:
@@ -147,6 +151,10 @@ class LoginSession(BaseModel):
     id = pw.BinaryUUIDField(primary_key=True, default=create_uuid)
     user = pw.ForeignKeyField(User, backref='sessions', null=False, lazy_load=True)
     drama_access_token = pw.CharField(null=False)
+
+    created_time = pw.BigIntegerField(null=False)
+    
+    notification_subscription = pw.TextField(null=True)
 
 class Stonk(BaseModel):
     id = pw.IntegerField(primary_key=True)
@@ -267,10 +275,50 @@ class Notification(BaseModel):
     user = pw.ForeignKeyField(User, backref='notifs', null=False, lazy_load=True)
 
     title = pw.CharField(null=False)
-    text = pw.CharField(null=False)
-    link = pw.CharField(null=True)
+    text = pw.TextField(null=False)
+    link = pw.TextField(null=True)
     color = pw.CharField(null=True)
 
     read = pw.BooleanField(null=False, default=False)
     created_time = pw.BigIntegerField(null=False)
+    
+    @staticmethod
+    def create_and_send(user_id: int, title: str, text: str, color: str) -> None:
+        """Create Notification object and send web push notifications"""
+        Notification.create(
+            user_id = user_id,
+            title = title,
+            text = text,
+            color = color,
+            created_time = get_time()
+        )
+
+        user = User.select(
+            User.show_push_notifications
+        ).where(User.id==user_id).first()
+
+        if not user.show_push_notifications:
+            return
+
+        data = json.dumps({
+            "title": title,
+            "text": text,
+            "color": color,
+            "timestamp": int(get_time()/1000),
+        })
+        
+        for login_session in LoginSession.select().where(
+            LoginSession.user_id==user_id,
+            LoginSession.notification_subscription!=None,
+        ):
+            webpush(
+                json.loads(login_session.notification_subscription),
+                data,
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims={"sub": "mailto:societymoment@protonmail.com"},
+            )
+
+
+        
+
 

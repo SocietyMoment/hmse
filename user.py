@@ -78,3 +78,18 @@ def notifications(user):
         notifs=user.notifs.order_by(Notification.created_time.desc())
     )
 
+@user_bp.route("/settings")
+@login_required()
+def settings(user):
+    return render_template("settings.html", user=user)
+
+@user_bp.route("/update_settings", methods=["POST"])
+@login_required()
+def update_settings(user):
+    show_notifs = request.json.get("show_notifications")
+    User.update(
+        show_push_notifications=show_notifs
+    ).where(User.id==user.id).execute()
+
+    return {}, 200
+
