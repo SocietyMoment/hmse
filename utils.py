@@ -1,7 +1,7 @@
 import os
 from typing import Optional
 from flask import Blueprint
-from jinja2 import Markup
+from markupsafe import Markup
 import posix_ipc
 
 utils_bp = Blueprint('utils', __name__)
