@@ -4,9 +4,10 @@ from models import db, models_bp, Position, Stonk
 from auth import auth_bp, login_required
 from orderbook import orderbook_bp
 from admin import admin_bp
-from stonks import stonks_bp
+from stonks import stonks_bp, jinja_stonks_list
 from user import user_bp
 from text_pages import text_bp
+from news import start_news_thread
 from utils import utils_bp
 
 app = Flask(__name__, template_folder='.')
@@ -45,6 +46,16 @@ def _db_close(exc):
     # pylint: disable=unused-argument
     if not db.is_closed():
         db.close()
+
+# Make sure it works with gnuicorn
+def app_startup():
+    start_news_thread()
+    jinja_stonks_list(app)
+
+with app.test_request_context():
+    _db_connect()
+    app_startup()
+
 
 @app.route("/")
 @login_required(fail=False)

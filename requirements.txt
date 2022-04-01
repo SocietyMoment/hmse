@@ -1,6 +1,8 @@
+Brotli==1.0.9
 Flask==2.0.3
 gevent==21.12.0
 gunicorn==20.1.0
+lxml==4.8.0
 methodtools==0.4.5
 peewee==3.14.10
 posix-ipc==1.0.5

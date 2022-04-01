@@ -76,3 +76,4 @@ services:
       - 3306
     ports:
       - 3001:3306
+    command: ['--wait_timeout=172800']

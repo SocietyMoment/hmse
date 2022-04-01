@@ -133,6 +133,37 @@
                     </div>
                 {% endif %}
 
+                {% if news_articles %}
+                    <div style="padding-top: 30px;">
+                        <h3 style="display:inline-block">Current News:</h3>
+                        <a style="line-height:2.5rem; float:right;" href="{{
+                            "https://news.google.com/search?q=%s&hl=en-US&gl=US&ceid=US:en" | format(stonk.search_term)
+                        }}" target="_blank">View on Google News</a>
+                    </div>
+                    </h3>
+                    <ul class="list-group list-group-flush">
+                        {% for article in news_articles %}
+                            <li class="list-group-item">
+                                <div class="media d-none d-md-flex">
+                                    <div class="media-body">
+                                        <a href="{{ article.link }}" target="_blank" class="text-reset stretched-link"><h5 class="mt-0 mb-2">{{ article.title }}</h5></a>
+                                        <span class="text-muted" style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow:hidden; z-index: 999999; position:relative;" title="{{ article.description }}">{{ article.description }}</span>
+                                    </div>
+                                    <img src="{{ article.image_url or "/img/no-image.png" }}" class="ml-3 img-thumbnail" style="width: 10em;height: 6em;">
+                                </div>
+                                <div class="d-md-none">
+                                    <a href="{{ article.link }}" target="_blank" class="text-reset stretched-link">
+                                        <img src="{{ article.image_url or "/img/no-image.png" }}" class="ml-3 mb-2 img-thumbnail" style="width: 10em;height: 6em; float:right;">
+                                        <h5 class="mt-0">{{ article.title }}
+                                        </h5>
+                                    </a>
+                                </div>
+                            </li>
+
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
                 {#
                 {% if (not open_orders) and (not match_history) %}
                     <h1 style="text-align:center; margin-top:150px;">No Open Positions</h1>

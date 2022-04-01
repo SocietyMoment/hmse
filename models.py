@@ -163,6 +163,10 @@ class Stonk(BaseModel):
 
     latest_price = pw.IntegerField(null=False)
 
+    # This is the google news search term
+    # Check news.py to see how it is used
+    search_term = pw.CharField(null=False)
+
     # ticker is encoded as an int, so
     # this gives it as a string
     # allows for up to 6 letter tickers

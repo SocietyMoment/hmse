@@ -3,13 +3,16 @@ from itertools import zip_longest
 from flask import Blueprint, render_template, request, abort, redirect
 from models import Stonk, Order, ORDER_BUY, ORDER_SELL, get_time, User
 from auth import login_required
+from news import news_articles
 from utils import open_message_queue
 
 stonks_bp = Blueprint('stonks', __name__)
 
-@stonks_bp.app_context_processor
-def jinja_stonks_list():
-    return dict(all_stonks=Stonk.select(Stonk.id, Stonk.name))
+# load all stonks, runs on
+# app startup
+def jinja_stonks_list(app):
+    all_stonks=Stonk.select(Stonk.id, Stonk.search_term, Stonk.name)
+    app.jinja_env.globals["all_stonks"] = all_stonks 
 
 @stonks_bp.route("/stonks")
 @login_required(fail=False)
@@ -20,7 +23,7 @@ def return_stonk_view(user, ticker: int):
     stonk = Stonk.get_or_none(Stonk.id==ticker)
     if stonk is None:
         abort(404)
-    return render_template("single_stonk.html", user=user, stonk=stonk)
+    return render_template("single_stonk.html", user=user, stonk=stonk, news_articles=news_articles[ticker])
 
 @stonks_bp.route("/stonks/<int:ticker_num>")
 @login_required(fail=False)
